@@ -1,0 +1,60 @@
+name: Documentation Check
+
+on:
+  pull_request:
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check chart READMEs exist
+        run: |
+          exit_code=0
+          for dir in charts/*/; do
+            if [ ! -f "$dir/README.md" ]; then
+              echo "ERROR: Missing README.md in $dir"
+              exit_code=1
+            fi
+          done
+          exit $exit_code
+
+      - name: Check CHARTS.md lists all charts
+        run: |
+          exit_code=0
+          for dir in charts/*/; do
+            chart_name=$(basename "$dir")
+            if ! grep -q "$chart_name" CHARTS.md; then
+              echo "ERROR: $chart_name not listed in CHARTS.md"
+              exit_code=1
+            fi
+          done
+          exit $exit_code
+
+      - name: Check required README sections
+        run: |
+          exit_code=0
+          required_sections=("## Overview" "## Prerequisites" "## Installation" "## Configuration" "## Examples" "## Upgrade Notes" "## Troubleshooting")
+          for dir in charts/*/; do
+            readme="$dir/README.md"
+            if [ -f "$readme" ]; then
+              for section in "${required_sections[@]}"; do
+                if ! grep -q "$section" "$readme"; then
+                  echo "WARNING: Missing '$section' in $readme"
+                fi
+              done
+            fi
+          done
+
+      - name: Check helm-docs freshness
+        run: |
+          if command -v helm-docs &> /dev/null; then
+            helm-docs --chart-search-root charts --dry-run
+            if ! git diff --exit-code; then
+              echo "WARNING: helm-docs output differs from committed READMEs"
+            fi
+          else
+            echo "INFO: helm-docs not installed, skipping freshness check"
+          fi

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: common-lib
+description: Reusable Helm library chart for helm-charts-hub — provides standard helpers for Deployments, Services, Ingress, HPA, labels, annotations, and security contexts.
+type: library
+version: 0.2.0
