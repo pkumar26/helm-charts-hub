@@ -1,0 +1,24 @@
+# Staging environment values for web-app
+# Usage: helm install my-app charts/web-app -f environments/staging/web-app.values.yaml --set image.repository=<img> --set image.tag=<tag>
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: app.staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+autoscaling:
+  enabled: false

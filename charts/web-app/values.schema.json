@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "workloadType": {
+      "type": "string",
+      "enum": ["deployment"],
+      "default": "deployment",
+      "description": "Workload type. Currently supported: deployment"
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "description": "Container image repository (required at install time)"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Container image tag (required at install time, must not be empty)"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "default": "IfNotPresent"
+        }
+      }
+    },
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 1
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+          "default": "ClusterIP"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 80
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "className": {
+          "type": "string"
+        },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "host": { "type": "string" },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": { "type": "string" },
+                    "pathType": { "type": "string", "enum": ["Prefix", "Exact", "ImplementationSpecific"] }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "secretName": { "type": "string" },
+              "hosts": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "autoscaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "minReplicas": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 80
+        },
+        "targetMemoryUtilizationPercentage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": "object"
+    },
+    "securityContext": {
+      "type": "object"
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": { "type": "boolean", "default": true },
+        "name": { "type": "string" },
+        "annotations": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "tolerations": {
+      "type": "array"
+    },
+    "affinity": {
+      "type": "object"
+    },
+    "podAnnotations": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "podLabels": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "annotations": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "extraEnv": {
+      "type": "array"
+    },
+    "extraVolumes": {
+      "type": "array"
+    },
+    "extraVolumeMounts": {
+      "type": "array"
+    },
+    "livenessProbe": {
+      "type": "object"
+    },
+    "readinessProbe": {
+      "type": "object"
+    },
+    "global": {
+      "type": "object",
+      "properties": {
+        "annotationPrefix": {
+          "type": "string",
+          "default": "platform.example.com"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+# CI test values — basic install with nginx image
+image:
+  repository: nginx
+  tag: "1.27-alpine"

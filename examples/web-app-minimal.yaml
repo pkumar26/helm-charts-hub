@@ -1,0 +1,5 @@
+# Minimal web-app example
+# Deploy with: helm install my-app charts/web-app -f examples/web-app-minimal.yaml
+image:
+  repository: nginx
+  tag: "1.27-alpine"

@@ -1,0 +1,19 @@
+# Dependencies
+charts/*/charts/
+*.tgz
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.tmp
+*.bak
+.idea/
+
+# Environment files
+.env*
+
+# Logs
+*.log

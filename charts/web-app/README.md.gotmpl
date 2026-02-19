@@ -1,0 +1,54 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+## Overview
+
+`web-app` is an application chart that uses [`common-lib`](../common-lib/) helpers to render standard Kubernetes resources with consistent labels, annotations, and security defaults.
+
+## Prerequisites
+
+- Helm ≥ 3.12
+- Kubernetes ≥ 1.26
+
+## Installation
+
+```bash
+helm install my-app oci://ghcr.io/<org>/charts/web-app --version {{ template "chart.version" . }} \
+  --set image.repository=<your-image> \
+  --set image.tag=<your-tag>
+```
+
+## Configuration
+
+{{ template "chart.valuesSection" . }}
+
+## Examples
+
+### Minimal
+
+```bash
+helm install my-app charts/web-app \
+  --set image.repository=nginx \
+  --set image.tag=1.27-alpine
+```
+
+### Production
+
+```bash
+helm install my-app charts/web-app -f examples/web-app-production.yaml
+```
+
+## Upgrade Notes
+
+### 0.1.0
+
+Initial release — no prior versions.
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `image.repository is required` | Provide `--set image.repository=<image>` |
+| `image.tag must not be empty` | Provide `--set image.tag=<tag>` |
+| `workloadType must be one of: deployment` | Set `workloadType` to `deployment` |

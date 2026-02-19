@@ -1,0 +1,65 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.description" . }}
+
+## Overview
+
+`common-lib` is a Helm library chart providing reusable helper templates for application charts.
+
+## Prerequisites
+
+- Helm ≥ 3.12
+
+## Installation
+
+Library charts cannot be installed directly. Declare as a dependency:
+
+```yaml
+dependencies:
+  - name: common-lib
+    version: ">=0.1.0 <1.0.0"
+    repository: "file://../common-lib"
+```
+
+## Configuration
+
+This chart has no user-facing configuration. Helpers consume values from the application chart.
+
+## Helper Reference
+
+| Helper | Output | Guard |
+|--------|--------|-------|
+| `common-lib.fullname` | Resource name (63-char) | — |
+| `common-lib.chart` | Chart name-version | — |
+| `common-lib.labels` | 6 base labels + extras | — |
+| `common-lib.selectorLabels` | 2 selector labels | — |
+| `common-lib.annotations` | 2 base annotations + extras | — |
+| `common-lib.deployment` | Deployment YAML | `workloadType == deployment` |
+| `common-lib.service` | Service YAML | `workloadType == deployment` |
+| `common-lib.ingress` | Ingress YAML | `ingress.enabled` |
+| `common-lib.hpa` | HPA YAML | `autoscaling.enabled` |
+| `common-lib.configmap` | ConfigMap YAML | data non-empty |
+| `common-lib.secrets` | Secret YAML | data non-empty |
+| `common-lib.serviceaccount` | ServiceAccount YAML | `serviceAccount.create` |
+| `common-lib.podsecurity` | Security context fragment | — |
+
+## Examples
+
+See the [web-app](../web-app/) chart for a complete integration example.
+
+## Upgrade Notes
+
+### 0.2.0
+
+Added Ingress, HPA, ConfigMap, and Secret helpers.
+
+### 0.1.0
+
+Initial release.
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Helper not found | Run `helm dependency build` on consuming chart |
+| Missing labels | Use dict pattern: `(dict "root" .)` |

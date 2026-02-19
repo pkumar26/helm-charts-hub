@@ -1,0 +1,35 @@
+# Production environment values for web-app
+# Usage: helm install my-app charts/web-app -f environments/production/web-app.values.yaml --set image.repository=<img> --set image.tag=<tag>
+
+replicaCount: 3
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: app.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: app-tls
+      hosts:
+        - app.example.com
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 75
+
+annotations:
+  platform.example.com/team: platform
+  platform.example.com/environment: production

@@ -1,0 +1,36 @@
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Package and push common-lib
+        run: |
+          helm package charts/common-lib
+          helm push common-lib-*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+
+      - name: Package and push web-app
+        run: |
+          helm dependency build charts/web-app
+          helm package charts/web-app
+          helm push web-app-*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts

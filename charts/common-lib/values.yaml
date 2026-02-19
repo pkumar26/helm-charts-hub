@@ -1,0 +1,123 @@
+# -- Workload type. Currently supported: deployment
+workloadType: deployment
+
+# -- Container image configuration
+image:
+  # -- Container image repository (REQUIRED)
+  repository: ""
+  # -- Container image tag (REQUIRED, must not be empty)
+  tag: ""
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Number of replicas
+replicaCount: 1
+
+# -- Service configuration
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 80
+
+# -- Ingress configuration
+ingress:
+  # -- Enable Ingress resource
+  enabled: false
+  # -- IngressClass name
+  className: ""
+  # -- Ingress host rules
+  hosts: []
+  # -- TLS configuration
+  tls: []
+  # -- Extra ingress annotations
+  annotations: {}
+
+# -- Autoscaling (HPA) configuration
+autoscaling:
+  # -- Enable HPA
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 1
+  # -- Maximum replicas
+  maxReplicas: 10
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 80
+  # -- Target memory utilization percentage (optional)
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 1000
+
+# -- Container security context
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+# -- ServiceAccount configuration
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name override
+  name: ""
+  # -- ServiceAccount annotations
+  annotations: {}
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Extra pod annotations
+podAnnotations: {}
+
+# -- Extra pod labels
+podLabels: {}
+
+# -- Extra resource labels
+labels: {}
+
+# -- Extra resource annotations
+annotations: {}
+
+# -- Extra environment variables
+extraEnv: []
+
+# -- Extra volumes
+extraVolumes: []
+
+# -- Extra volume mounts
+extraVolumeMounts: []
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+# -- Global configuration
+global:
+  # -- Annotation prefix for ownership annotations
+  annotationPrefix: platform.example.com

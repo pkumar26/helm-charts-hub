@@ -1,0 +1,15 @@
+# Patterns to ignore when building Helm chart packages
+.git
+.specify
+specs/
+environments/
+examples/
+*.md
+!Chart.yaml
+.gitignore
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+.vscode/
+.idea/
