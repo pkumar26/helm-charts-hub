@@ -149,7 +149,7 @@ charts/
   `ingress.yaml` MUST primarily delegate to `common-lib` helpers:
 
   ```yaml
-  {{- include "common-lib.deployment" . }}
+  {{- include "common-lib.deployment" (dict "root" .) }}
   ```
 
 - Application charts MAY define additional resources when the

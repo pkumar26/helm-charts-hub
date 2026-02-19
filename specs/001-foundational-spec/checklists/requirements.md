@@ -34,3 +34,4 @@
 - All items pass validation. Spec is ready for `/speckit.clarify` or `/speckit.plan`.
 - Open questions (§8) are intentionally deferred — they represent future scope decisions, not ambiguity in the current spec.
 - Three open questions listed in §8.1 are flagged for future decision but do not block implementation of the core specification.
+- Merged content from `002-docs-and-guides` spec on 2026-02-19: root README, Getting Started flow, per-chart README details, chart catalog, and README template requirements (FR-025–FR-046, SC-009–SC-013, US7–US10).
