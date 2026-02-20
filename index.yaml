@@ -2,11 +2,11 @@ apiVersion: v1
 entries:
   common-lib:
   - apiVersion: v2
-    created: "2026-02-20T08:37:37.301333184-08:00"
+    created: "2026-02-20T09:23:04.258076568-08:00"
     description: Reusable Helm library chart for helm-charts-hub — provides standard
       helpers for Deployments, Services, Ingress, HPA, labels, annotations, and security
       contexts.
-    digest: cd25eaed4c1d882cedd551acf4e98d8d9915a2c725cd603aed8dbd917e7a7f1a
+    digest: 66621bb1d418268752f7ff11290750277029a9d4427f553600f49a8749ae334c
     name: common-lib
     type: library
     urls:
@@ -15,14 +15,14 @@ entries:
   nginx-controller:
   - apiVersion: v2
     appVersion: 1.12.1
-    created: "2026-02-20T08:37:37.303189536-08:00"
+    created: "2026-02-20T09:23:04.260778921-08:00"
     dependencies:
     - name: common-lib
       repository: file://../common-lib
       version: '>=0.1.0 <1.0.0'
     description: NGINX Ingress Controller chart for helm-charts-hub — based on ingress-nginx
       for Kubernetes Ingress mode
-    digest: 754b52ee26f61fc17158959d29e1e1aa383d846beb277e28c3c5fd3604af67f8
+    digest: e0606bfd76ce6d1a1b1170d55778b0fadb879247841a5a02c62d8acda78f8bc3
     name: nginx-controller
     type: application
     urls:
@@ -31,14 +31,14 @@ entries:
   traefik-controller:
   - apiVersion: v2
     appVersion: 3.3.3
-    created: "2026-02-20T08:37:37.308097889-08:00"
+    created: "2026-02-20T09:23:04.262746157-08:00"
     dependencies:
     - name: common-lib
       repository: file://../common-lib
       version: '>=0.1.0 <1.0.0'
     description: Traefik v3 edge controller chart for helm-charts-hub — supports Kubernetes
       Ingress and Gateway API modes
-    digest: 9dfd47b70644432fae1aedbdfb1958c35a2f80109bd35f4e341310fbbab6345c
+    digest: 29597e3d610c82625733d67e74a1ed046288c129711a0a49d8bc11fd9a360ad0
     name: traefik-controller
     type: application
     urls:
@@ -47,17 +47,17 @@ entries:
   web-app:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-20T08:37:37.311274779-08:00"
+    created: "2026-02-20T09:23:04.264205971-08:00"
     dependencies:
     - name: common-lib
       repository: file://../common-lib
       version: '>=0.1.0 <1.0.0'
     description: General-purpose application chart for deploying services on Kubernetes.
       Supports Deployment and CronJob workload types.
-    digest: 6c03e424c7a7a19e513e868f2b946c8b91412c5fdef82e21dc65b4de6a6b16a8
+    digest: bf39b1fb3ad7cf13f5b50988616b1f31226fb6cf248a0e6c2f3278a77e69ebd3
     name: web-app
     type: application
     urls:
     - https://pkumar26.github.io/helm-charts-hub/web-app-0.1.0.tgz
     version: 0.1.0
-generated: "2026-02-20T08:37:37.300272456-08:00"
+generated: "2026-02-20T09:23:04.256920754-08:00"
