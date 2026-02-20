@@ -17,7 +17,7 @@
 ### From OCI Registry
 
 ```bash
-helm install <release-name> oci://ghcr.io/<org>/charts/<chart-name> --version <version> \
+helm install <release-name> oci://ghcr.io/pkumar26/charts/<chart-name> --version <version> \
   --set image.repository=<your-image> \
   --set image.tag=<your-tag>
 ```

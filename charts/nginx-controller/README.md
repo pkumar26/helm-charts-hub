@@ -19,7 +19,7 @@ Gateway API support for NGINX requires the separate [nginx-gateway-fabric](https
 
 ```bash
 # Add the chart repository
-helm install nginx oci://ghcr.io/<org>/charts/nginx-controller --version 0.1.0
+helm install nginx oci://ghcr.io/pkumar26/charts/nginx-controller --version 0.1.0
 
 # Or install from local source
 helm install nginx ./charts/nginx-controller

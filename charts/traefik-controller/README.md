@@ -21,7 +21,7 @@ This chart deploys [Traefik](https://traefik.io/) as a Kubernetes edge controlle
 
 ```bash
 # Add the chart repository
-helm install traefik oci://ghcr.io/<org>/charts/traefik-controller --version 0.1.0
+helm install traefik oci://ghcr.io/pkumar26/charts/traefik-controller --version 0.1.0
 
 # Or install from local source
 helm install traefik ./charts/traefik-controller

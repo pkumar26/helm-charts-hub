@@ -19,7 +19,7 @@ It deploys a generic HTTP service (Deployment + Service) with optional Ingress, 
 ### From OCI Registry
 
 ```bash
-helm install my-app oci://ghcr.io/<org>/charts/web-app --version 0.1.0 \
+helm install my-app oci://ghcr.io/pkumar26/charts/web-app --version 0.1.0 \
   --set image.repository=<your-image> \
   --set image.tag=<your-tag>
 ```

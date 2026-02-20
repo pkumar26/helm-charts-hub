@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-helm install my-app oci://ghcr.io/<org>/charts/web-app --version {{ template "chart.version" . }} \
+helm install my-app oci://ghcr.io/pkumar26/charts/web-app --version {{ template "chart.version" . }} \
   --set image.repository=<your-image> \
   --set image.tag=<your-tag>
 ```

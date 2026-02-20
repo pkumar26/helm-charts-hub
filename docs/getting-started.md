@@ -94,7 +94,7 @@ helm install my-app charts/web-app \
 ### From OCI Registry
 
 ```bash
-helm install my-app oci://ghcr.io/<org>/charts/web-app --version 0.1.0 \
+helm install my-app oci://ghcr.io/pkumar26/charts/web-app --version 0.1.0 \
   --set image.repository=nginx \
   --set image.tag=1.27-alpine
 ```
