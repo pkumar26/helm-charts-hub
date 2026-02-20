@@ -79,7 +79,7 @@ kubectl wait --namespace traefik --for=condition=ready pod --selector=app.kubern
 
 ```bash
 # Clone the repository (if you haven't already)
-git clone https://github.com/<org>/helm-charts-hub.git
+git clone https://github.com/pkumar26/helm-charts-hub.git
 cd helm-charts-hub
 
 # Build dependencies

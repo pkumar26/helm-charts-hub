@@ -49,7 +49,7 @@ Charts are published from this GitHub repository via GitHub Pages.
 ### Add the helm-charts-hub repo (GitHub Pages)
 
 ```bash
-helm repo add helm-charts-hub https://<GITHUB_USER_OR_ORG>.github.io/helm-charts-hub/
+helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
 helm repo update
 ```
 ## Install a Chart
@@ -95,8 +95,7 @@ See [CHARTS.md](CHARTS.md) for the complete list of available charts with descri
 ### Helm Repo Issues
 
 ```
-Error: failed to fetch https://<GITHUB_USER_OR_ORG>.github.io/helm-charts-hub/index.yaml
-
+Error: failed to fetch https://pkumar26.github.io/helm-charts-hub/index.yaml
 ```
 - Verify the URL is correct and GitHub Pages is enabled for the repository.
 - Run helm repo update and try again.
