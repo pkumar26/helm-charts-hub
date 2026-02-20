@@ -46,7 +46,7 @@ If you want to test Ingress routing, install one of the controller charts from t
 ```bash
 helm dependency build charts/nginx-controller
 helm install nginx charts/nginx-controller \
-  --namespace ingress-nginx --create-namespace \
+  --namespace nginx-controller --create-namespace \
   --set service.type=NodePort
 ```
 
@@ -63,7 +63,7 @@ Wait for the controller to be ready:
 
 ```bash
 # For NGINX:
-kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/name=nginx-controller --timeout=90s
+kubectl wait --namespace nginx-controller --for=condition=ready pod --selector=app.kubernetes.io/name=nginx-controller --timeout=90s
 
 # For Traefik:
 kubectl wait --namespace traefik --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-controller --timeout=90s
@@ -151,7 +151,7 @@ curl -H "Host: my-app.local" http://localhost:80
 helm uninstall my-app
 
 # (Optional) Remove the ingress controller
-helm uninstall nginx -n ingress-nginx  # or: helm uninstall traefik -n traefik
+helm uninstall nginx -n nginx-controller  # or: helm uninstall traefik -n traefik
 
 # Delete the kind cluster
 kind delete cluster --name helm-demo
