@@ -38,6 +38,9 @@ helm install nginx-controller ./charts/nginx-controller
 | `service.ports.http` | int | `80` | HTTP port |
 | `service.ports.https` | int | `443` | HTTPS port |
 | `service.annotations` | object | `{}` | Extra service annotations |
+| `service.internal` | bool | `false` | Use an internal (private) load balancer. Auto-sets AWS, GCP, and Azure annotations |
+| `service.loadBalancerIP` | string | `""` | Static IP address for the LoadBalancer |
+| `service.loadBalancerSourceRanges` | list | `[]` | Restrict source ranges allowed to access the LoadBalancer |
 | `ingressController.enabled` | bool | `true` | Create IngressClass resource |
 | `ingressController.ingressClassName` | string | `nginx` | IngressClass name |
 | `ingressController.config` | object | `{}` | NGINX ConfigMap overrides |

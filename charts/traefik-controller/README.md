@@ -52,6 +52,9 @@ helm install traefik-controller ./charts/traefik-controller \
 | `service.ports.web` | int | `80` | HTTP entrypoint port |
 | `service.ports.websecure` | int | `443` | HTTPS entrypoint port |
 | `service.annotations` | object | `{}` | Extra service annotations |
+| `service.internal` | bool | `false` | Use an internal (private) load balancer. Auto-sets AWS, GCP, and Azure annotations |
+| `service.loadBalancerIP` | string | `""` | Static IP address for the LoadBalancer |
+| `service.loadBalancerSourceRanges` | list | `[]` | Restrict source ranges allowed to access the LoadBalancer |
 | `providers.kubernetesIngress.enabled` | bool | `true` | Enable Kubernetes Ingress provider |
 | `providers.kubernetesGateway.enabled` | bool | `false` | Enable Kubernetes Gateway API provider |
 | `ingressController.enabled` | bool | `true` | Create IngressClass resource |
