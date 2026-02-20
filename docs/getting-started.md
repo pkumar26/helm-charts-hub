@@ -39,38 +39,34 @@ kubectl cluster-info --context kind-helm-demo
 
 ## 2. Install an Ingress Controller (Optional)
 
-If you want to test Ingress routing, install an ingress controller. Choose one:
+If you want to test Ingress routing, install one of the controller charts from this repository. Choose one:
 
 ### Option A: NGINX Ingress Controller
 
 ```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-helm install ingress-nginx ingress-nginx/ingress-nginx \
+helm dependency build charts/nginx-controller
+helm install nginx charts/nginx-controller \
   --namespace ingress-nginx --create-namespace \
-  --set controller.hostPort.enabled=true \
-  --set controller.service.type=NodePort
+  --set service.type=NodePort
 ```
 
 ### Option B: Traefik
 
 ```bash
-helm repo add traefik https://traefik.github.io/charts
-helm repo update
-helm install traefik traefik/traefik \
+helm dependency build charts/traefik-controller
+helm install traefik charts/traefik-controller \
   --namespace traefik --create-namespace \
-  --set ports.web.hostPort=80 \
-  --set ports.websecure.hostPort=443
+  --set service.type=NodePort
 ```
 
 Wait for the controller to be ready:
 
 ```bash
 # For NGINX:
-kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/name=nginx-controller --timeout=90s
 
 # For Traefik:
-kubectl wait --namespace traefik --for=condition=ready pod --selector=app.kubernetes.io/name=traefik --timeout=90s
+kubectl wait --namespace traefik --for=condition=ready pod --selector=app.kubernetes.io/name=traefik-controller --timeout=90s
 ```
 
 ## 3. Install the web-app Chart
@@ -155,7 +151,7 @@ curl -H "Host: my-app.local" http://localhost:80
 helm uninstall my-app
 
 # (Optional) Remove the ingress controller
-helm uninstall ingress-nginx -n ingress-nginx  # or: helm uninstall traefik -n traefik
+helm uninstall nginx -n ingress-nginx  # or: helm uninstall traefik -n traefik
 
 # Delete the kind cluster
 kind delete cluster --name helm-demo
