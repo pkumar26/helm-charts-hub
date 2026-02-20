@@ -34,5 +34,11 @@ spec:
       targetPort: websecure
       protocol: TCP
       name: websecure
+    {{- if .Values.dashboard.enabled }}
+    - port: 9000
+      targetPort: traefik
+      protocol: TCP
+      name: traefik
+    {{- end }}
   selector:
     {{- include "common-lib.selectorLabels" . | nindent 4 }}
