@@ -14,10 +14,11 @@
 
 ## Installation
 
-### From OCI Registry
+### From Helm Repository
 
 ```bash
-helm install <release-name> oci://ghcr.io/pkumar26/charts/<chart-name> --version <version> \
+helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
+helm install <release-name> helm-charts-hub/<chart-name> \
   --set image.repository=<your-image> \
   --set image.tag=<your-tag>
 ```

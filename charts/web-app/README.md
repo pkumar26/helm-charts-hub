@@ -16,10 +16,11 @@ It deploys a generic HTTP service (Deployment + Service) with optional Ingress, 
 
 ## Installation
 
-### From OCI Registry
+### From Helm Repository
 
 ```bash
-helm install my-app oci://ghcr.io/pkumar26/charts/web-app --version 0.1.0 \
+helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
+helm install my-app helm-charts-hub/web-app \
   --set image.repository=<your-image> \
   --set image.tag=<your-tag>
 ```
