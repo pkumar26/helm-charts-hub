@@ -1,6 +1,12 @@
 # -- Workload type. Controller charts always use deployment.
 workloadType: deployment
 
+# -- Override the chart name used in resource names.
+nameOverride: ""
+
+# -- Override the full resource name. If set, this is used as-is for all resource names.
+fullnameOverride: ""
+
 # -- Container image configuration
 image:
   # -- Traefik container image repository
@@ -18,10 +24,14 @@ service:
   # -- Service type
   type: LoadBalancer
   ports:
-    # -- HTTP entrypoint port
+    # -- HTTP entrypoint port (exposed on the Service)
     web: 80
-    # -- HTTPS entrypoint port
+    # -- HTTPS entrypoint port (exposed on the Service)
     websecure: 443
+  # -- Container ports (internal; high ports avoid privileged port issues)
+  containerPorts:
+    web: 8080
+    websecure: 8443
   # -- Static IP address for the LoadBalancer (set to a pre-reserved IP)
   loadBalancerIP: ""
   # -- Use an internal (private) load balancer instead of public.

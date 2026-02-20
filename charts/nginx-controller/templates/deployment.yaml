@@ -46,6 +46,8 @@ spec:
             - "--election-id={{ .Values.ingressController.electionId }}"
             - "--configmap=$(POD_NAMESPACE)/{{ include "common-lib.fullname" . }}"
             - "--publish-service=$(POD_NAMESPACE)/{{ include "common-lib.fullname" . }}"
+            - "--http-port={{ .Values.service.containerPorts.http }}"
+            - "--https-port={{ .Values.service.containerPorts.https }}"
             {{- with .Values.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -65,10 +67,10 @@ spec:
             {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.ports.http }}
+              containerPort: {{ .Values.service.containerPorts.http }}
               protocol: TCP
             - name: https
-              containerPort: {{ .Values.service.ports.https }}
+              containerPort: {{ .Values.service.containerPorts.https }}
               protocol: TCP
             - name: health
               containerPort: 10254

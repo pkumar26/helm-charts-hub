@@ -41,8 +41,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - "--entrypoints.web.address=:{{ .Values.service.ports.web }}"
-            - "--entrypoints.websecure.address=:{{ .Values.service.ports.websecure }}"
+            - "--entrypoints.web.address=:{{ .Values.service.containerPorts.web }}"
+            - "--entrypoints.websecure.address=:{{ .Values.service.containerPorts.websecure }}"
             - "--entrypoints.traefik.address=:9000"
             - "--ping=true"
             - "--ping.entrypoint=traefik"
@@ -65,10 +65,10 @@ spec:
             {{- end }}
           ports:
             - name: web
-              containerPort: {{ .Values.service.ports.web }}
+              containerPort: {{ .Values.service.containerPorts.web }}
               protocol: TCP
             - name: websecure
-              containerPort: {{ .Values.service.ports.websecure }}
+              containerPort: {{ .Values.service.containerPorts.websecure }}
               protocol: TCP
             - name: traefik
               containerPort: 9000

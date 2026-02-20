@@ -20,10 +20,10 @@ Gateway API support for NGINX requires the separate [nginx-gateway-fabric](https
 ```bash
 # From the Helm repository
 helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
-helm install nginx helm-charts-hub/nginx-controller
+helm install nginx-controller helm-charts-hub/nginx-controller
 
 # Or install from local source
-helm install nginx ./charts/nginx-controller
+helm install nginx-controller ./charts/nginx-controller
 ```
 
 ## Configuration

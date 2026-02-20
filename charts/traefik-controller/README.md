@@ -22,10 +22,10 @@ This chart deploys [Traefik](https://traefik.io/) as a Kubernetes edge controlle
 ```bash
 # From the Helm repository
 helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
-helm install traefik helm-charts-hub/traefik-controller
+helm install traefik-controller helm-charts-hub/traefik-controller
 
 # Or install from local source
-helm install traefik ./charts/traefik-controller
+helm install traefik-controller ./charts/traefik-controller
 ```
 
 ### With Gateway API enabled
@@ -35,7 +35,7 @@ helm install traefik ./charts/traefik-controller
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml
 
 # Install Traefik with Gateway API
-helm install traefik ./charts/traefik-controller \
+helm install traefik-controller ./charts/traefik-controller \
   --set gatewayApi.enabled=true \
   --set providers.kubernetesGateway.enabled=true
 ```

@@ -1,6 +1,12 @@
 # -- Workload type. Controller charts always use deployment.
 workloadType: deployment
 
+# -- Override the chart name used in resource names.
+nameOverride: ""
+
+# -- Override the full resource name. If set, this is used as-is for all resource names.
+fullnameOverride: ""
+
 # -- Container image configuration
 image:
   # -- NGINX Ingress Controller image repository
@@ -18,10 +24,14 @@ service:
   # -- Service type
   type: LoadBalancer
   ports:
-    # -- HTTP port
+    # -- HTTP port (exposed on the Service)
     http: 80
-    # -- HTTPS port
+    # -- HTTPS port (exposed on the Service)
     https: 443
+  # -- Container ports (internal; high ports avoid privileged port issues)
+  containerPorts:
+    http: 8080
+    https: 8443
   # -- Static IP address for the LoadBalancer (set to a pre-reserved IP)
   loadBalancerIP: ""
   # -- Use an internal (private) load balancer instead of public.
