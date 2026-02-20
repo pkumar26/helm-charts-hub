@@ -1,0 +1,16 @@
+{{/*
+ConfigMap for NGINX controller configuration.
+Contains NGINX configuration overrides from ingressController.config values.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.ingressController.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

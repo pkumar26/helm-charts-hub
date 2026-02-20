@@ -1,0 +1,22 @@
+# CI test values for NGINX Ingress Controller
+image:
+  repository: registry.k8s.io/ingress-nginx/controller
+  tag: "v1.12.1"
+replicaCount: 1
+service:
+  type: ClusterIP
+  ports:
+    http: 8080
+    https: 8443
+ingressController:
+  enabled: true
+  ingressClassName: nginx
+  config:
+    use-forwarded-headers: "true"
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

@@ -1,0 +1,29 @@
+{{/*
+Gateway — only rendered when gatewayApi.enabled is true.
+Creates a Gateway resource with configured listeners.
+*/}}
+{{- if .Values.gatewayApi.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Values.gatewayApi.gateway.name }}
+  namespace: {{ .Values.gatewayApi.gateway.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  gatewayClassName: {{ .Values.gatewayApi.gatewayClass.name }}
+  listeners:
+    {{- range .Values.gatewayApi.gateway.listeners }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      protocol: {{ .protocol }}
+      {{- if .hostname }}
+      hostname: {{ .hostname | quote }}
+      {{- end }}
+      allowedRoutes:
+        namespaces:
+          from: All
+    {{- end }}
+{{- end }}

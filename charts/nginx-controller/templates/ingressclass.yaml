@@ -1,0 +1,15 @@
+{{/*
+IngressClass for NGINX — registers NGINX as an Ingress controller.
+*/}}
+{{- if .Values.ingressController.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: {{ .Values.ingressController.ingressClassName }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  controller: k8s.io/ingress-nginx
+{{- end }}

@@ -135,3 +135,7 @@ Error: create: failed to create: namespaces "..." not found
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution guide, library-first workflow, and PR process.
 
 The project constitution and specifications (in .specify/) describe the high-level design principles, chart conventions, and roadmap, including the transition path from Ingress to Gateway API.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

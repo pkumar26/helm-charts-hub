@@ -1,0 +1,116 @@
+{{/*
+Traefik Deployment — custom template for controller-specific needs:
+multi-port, CLI args for providers, ping entrypoint, RBAC requirements.
+Uses common-lib for labels, annotations, and naming.
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "common-lib.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "common-lib.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name | default (include "common-lib.fullname" .) }}
+      automountServiceAccountToken: true
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: traefik
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "--entrypoints.web.address=:{{ .Values.service.ports.web }}"
+            - "--entrypoints.websecure.address=:{{ .Values.service.ports.websecure }}"
+            - "--entrypoints.traefik.address=:9000"
+            - "--ping=true"
+            - "--ping.entrypoint=traefik"
+            {{- if .Values.providers.kubernetesIngress.enabled }}
+            - "--providers.kubernetesingress=true"
+            {{- end }}
+            {{- if .Values.providers.kubernetesGateway.enabled }}
+            - "--providers.kubernetesgateway=true"
+            {{- end }}
+            {{- if .Values.metrics.prometheus.enabled }}
+            - "--metrics.prometheus=true"
+            - "--entrypoints.metrics.address=:{{ .Values.metrics.prometheus.port }}"
+            {{- end }}
+            {{- if .Values.dashboard.enabled }}
+            - "--api.dashboard=true"
+            - "--api.insecure=true"
+            {{- end }}
+            {{- with .Values.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: web
+              containerPort: {{ .Values.service.ports.web }}
+              protocol: TCP
+            - name: websecure
+              containerPort: {{ .Values.service.ports.websecure }}
+              protocol: TCP
+            - name: traefik
+              containerPort: 9000
+              protocol: TCP
+            {{- if .Values.metrics.prometheus.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.metrics.prometheus.port }}
+              protocol: TCP
+            {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- with .Values.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

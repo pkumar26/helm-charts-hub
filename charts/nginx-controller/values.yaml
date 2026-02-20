@@ -1,0 +1,153 @@
+# -- Workload type. Controller charts always use deployment.
+workloadType: deployment
+
+# -- Container image configuration
+image:
+  # -- NGINX Ingress Controller image repository
+  repository: registry.k8s.io/ingress-nginx/controller
+  # -- NGINX Ingress Controller image tag
+  tag: "v1.12.1"
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Number of replicas
+replicaCount: 1
+
+# -- Service configuration (LoadBalancer for edge traffic)
+service:
+  # -- Service type
+  type: LoadBalancer
+  ports:
+    # -- HTTP port
+    http: 80
+    # -- HTTPS port
+    https: 443
+  # -- Extra service annotations (e.g., cloud provider LB annotations)
+  annotations: {}
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  fsGroup: 101
+
+# -- Container security context
+securityContext:
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+
+# -- NGINX Ingress Controller configuration
+ingressController:
+  # -- Enable Ingress controller mode
+  enabled: true
+  # -- IngressClass name
+  ingressClassName: nginx
+  # -- NGINX ConfigMap overrides (key-value pairs)
+  config: {}
+  # -- Election ID for leader election
+  electionId: ingress-nginx-leader
+
+# -- Gateway API configuration (roadmap — requires nginx-gateway-fabric)
+gatewayApi:
+  # -- Reserved for future nginx-gateway-fabric integration
+  enabled: false
+
+# -- ServiceAccount configuration
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name override
+  name: ""
+  # -- ServiceAccount annotations
+  annotations: {}
+
+# -- RBAC configuration
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding
+  create: true
+
+# -- Ingress configuration (not used for the controller itself)
+ingress:
+  enabled: false
+  className: ""
+  hosts: []
+  tls: []
+  annotations: {}
+
+# -- Autoscaling (HPA) configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Extra pod annotations
+podAnnotations: {}
+
+# -- Extra pod labels
+podLabels: {}
+
+# -- Extra resource labels
+labels: {}
+
+# -- Extra resource annotations
+annotations: {}
+
+# -- Extra environment variables
+extraEnv: []
+
+# -- Extra volumes
+extraVolumes: []
+
+# -- Extra volume mounts
+extraVolumeMounts: []
+
+# -- Extra container args
+extraArgs: []
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 10254
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 10254
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# -- Global configuration
+global:
+  # -- Annotation prefix for ownership annotations
+  annotationPrefix: platform.example.com

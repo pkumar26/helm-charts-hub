@@ -1,0 +1,17 @@
+# NGINX Ingress Controller — dev environment overlay
+replicaCount: 1
+service:
+  type: ClusterIP
+  ports:
+    http: 8080
+    https: 8443
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+ingressController:
+  config:
+    use-forwarded-headers: "true"

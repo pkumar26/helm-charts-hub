@@ -1,0 +1,19 @@
+NGINX Ingress Controller has been deployed.
+
+IngressClass: {{ .Values.ingressController.ingressClassName }}
+
+Create Ingress resources with:
+  spec:
+    ingressClassName: {{ .Values.ingressController.ingressClassName }}
+
+Get the NGINX LoadBalancer IP:
+  kubectl get svc {{ include "common-lib.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+Verify the controller is running:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ .Chart.Name }},app.kubernetes.io/instance={{ .Release.Name }}
+
+{{- if .Values.gatewayApi.enabled }}
+
+Gateway API: Gateway API support requires nginx-gateway-fabric.
+See https://github.com/nginx/nginx-gateway-fabric for details.
+{{- end }}

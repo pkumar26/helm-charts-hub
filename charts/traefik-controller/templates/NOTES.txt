@@ -1,0 +1,30 @@
+Traefik has been deployed as an edge controller.
+
+{{- if .Values.ingressController.enabled }}
+
+Ingress Mode:
+  IngressClass: {{ .Values.ingressController.ingressClassName }}
+  Create Ingress resources with:
+    spec:
+      ingressClassName: {{ .Values.ingressController.ingressClassName }}
+{{- end }}
+
+{{- if .Values.gatewayApi.enabled }}
+
+Gateway API Mode:
+  GatewayClass: {{ .Values.gatewayApi.gatewayClass.name }}
+  Gateway: {{ .Values.gatewayApi.gateway.name }}
+  Create HTTPRoute resources referencing the gateway:
+    spec:
+      parentRefs:
+        - name: {{ .Values.gatewayApi.gateway.name }}
+{{- end }}
+
+Get the Traefik LoadBalancer IP:
+  kubectl get svc {{ include "common-lib.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+{{- if .Values.dashboard.enabled }}
+
+Dashboard:
+  Access the Traefik dashboard at http://<TRAEFIK_IP>:9000/dashboard/
+{{- end }}

@@ -1,0 +1,38 @@
+# CI test values for Traefik controller — Gateway API mode
+image:
+  repository: traefik
+  tag: "v3.3.3"
+replicaCount: 1
+service:
+  type: ClusterIP
+  ports:
+    web: 8080
+    websecure: 8443
+providers:
+  kubernetesIngress:
+    enabled: true
+  kubernetesGateway:
+    enabled: true
+ingressController:
+  enabled: true
+  ingressClassName: traefik
+gatewayApi:
+  enabled: true
+  gatewayClass:
+    name: traefik
+  gateway:
+    name: traefik-gateway
+    listeners:
+      - name: http
+        port: 80
+        protocol: HTTP
+      - name: https
+        port: 443
+        protocol: HTTPS
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

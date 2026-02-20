@@ -1,0 +1,27 @@
+# CI test values for Traefik controller — Ingress mode
+image:
+  repository: traefik
+  tag: "v3.3.3"
+replicaCount: 1
+service:
+  type: ClusterIP
+  ports:
+    web: 8080
+    websecure: 8443
+providers:
+  kubernetesIngress:
+    enabled: true
+  kubernetesGateway:
+    enabled: false
+ingressController:
+  enabled: true
+  ingressClassName: traefik
+gatewayApi:
+  enabled: false
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi

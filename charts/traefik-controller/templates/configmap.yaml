@@ -1,0 +1,32 @@
+{{/*
+ConfigMap for Traefik static configuration overrides.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common-lib.fullname" . }}-config
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+data:
+  traefik.yaml: |
+    entryPoints:
+      web:
+        address: ":{{ .Values.service.ports.web }}"
+      websecure:
+        address: ":{{ .Values.service.ports.websecure }}"
+    {{- if .Values.providers.kubernetesIngress.enabled }}
+    providers:
+      kubernetesIngress: {}
+    {{- end }}
+    {{- if .Values.providers.kubernetesGateway.enabled }}
+    providers:
+      kubernetesGateway: {}
+    {{- end }}
+    {{- if .Values.dashboard.enabled }}
+    api:
+      dashboard: true
+      insecure: true
+    {{- end }}
+    ping: {}

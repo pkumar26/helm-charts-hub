@@ -1,0 +1,25 @@
+{{/*
+Traefik Service — LoadBalancer with web (HTTP) and websecure (HTTPS) ports.
+Uses common-lib for labels, annotations, and naming.
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" (merge (default (dict) .Values.service.annotations) (default (dict) .Values.annotations))) | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.ports.web }}
+      targetPort: web
+      protocol: TCP
+      name: web
+    - port: {{ .Values.service.ports.websecure }}
+      targetPort: websecure
+      protocol: TCP
+      name: websecure
+  selector:
+    {{- include "common-lib.selectorLabels" . | nindent 4 }}

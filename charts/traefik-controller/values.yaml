@@ -1,0 +1,195 @@
+# -- Workload type. Controller charts always use deployment.
+workloadType: deployment
+
+# -- Container image configuration
+image:
+  # -- Traefik container image repository
+  repository: traefik
+  # -- Traefik container image tag
+  tag: "v3.3.3"
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Number of replicas
+replicaCount: 1
+
+# -- Service configuration (LoadBalancer for edge traffic)
+service:
+  # -- Service type
+  type: LoadBalancer
+  ports:
+    # -- HTTP entrypoint port
+    web: 80
+    # -- HTTPS entrypoint port
+    websecure: 443
+  # -- Extra service annotations (e.g., cloud provider LB annotations)
+  annotations: {}
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+
+# -- Container security context
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+
+# -- Kubernetes Ingress provider configuration
+providers:
+  kubernetesIngress:
+    # -- Enable Ingress controller mode
+    enabled: true
+  kubernetesGateway:
+    # -- Enable Gateway API mode (requires gatewayApi.enabled)
+    enabled: false
+
+# -- Traefik dashboard configuration
+dashboard:
+  # -- Enable Traefik dashboard
+  enabled: false
+  # -- Expose dashboard via Ingress
+  ingress:
+    enabled: false
+
+# -- Metrics configuration
+metrics:
+  prometheus:
+    # -- Enable Prometheus metrics endpoint
+    enabled: false
+    # -- Metrics entrypoint port
+    port: 9100
+
+# -- TLS configuration
+tls:
+  # -- Enable TLS on websecure entrypoint
+  enabled: false
+  # -- Certificate resolver name
+  certResolver: ""
+
+# -- Ingress controller feature flag
+ingressController:
+  # -- Enable management of classic Ingress resources
+  enabled: true
+  # -- IngressClass name
+  ingressClassName: traefik
+
+# -- Gateway API feature flag
+gatewayApi:
+  # -- Enable Gateway API provider, GatewayClass, and Gateway
+  enabled: false
+  gatewayClass:
+    # -- GatewayClass name
+    name: traefik
+  gateway:
+    # -- Gateway name
+    name: traefik-gateway
+    # -- Gateway namespace (defaults to release namespace)
+    namespace: ""
+    listeners:
+      - name: http
+        port: 80
+        protocol: HTTP
+      - name: https
+        port: 443
+        protocol: HTTPS
+
+# -- ServiceAccount configuration
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name override
+  name: ""
+  # -- ServiceAccount annotations
+  annotations: {}
+
+# -- RBAC configuration
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding
+  create: true
+
+# -- Ingress configuration (for exposing Traefik dashboard)
+ingress:
+  enabled: false
+  className: ""
+  hosts: []
+  tls: []
+  annotations: {}
+
+# -- Autoscaling (HPA) configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Extra pod annotations
+podAnnotations: {}
+
+# -- Extra pod labels
+podLabels: {}
+
+# -- Extra resource labels
+labels: {}
+
+# -- Extra resource annotations
+annotations: {}
+
+# -- Extra environment variables
+extraEnv: []
+
+# -- Extra volumes
+extraVolumes: []
+
+# -- Extra volume mounts
+extraVolumeMounts: []
+
+# -- Extra container args
+extraArgs: []
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /ping
+    port: traefik
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /ping
+    port: traefik
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# -- Global configuration
+global:
+  # -- Annotation prefix for ownership annotations
+  annotationPrefix: platform.example.com

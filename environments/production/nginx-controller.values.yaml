@@ -1,0 +1,22 @@
+# NGINX Ingress Controller — production environment overlay
+replicaCount: 3
+service:
+  type: LoadBalancer
+resources:
+  requests:
+    cpu: 500m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 75
+ingressController:
+  config:
+    use-forwarded-headers: "true"
+    proxy-body-size: "100m"
+    use-gzip: "true"
+    enable-brotli: "true"
