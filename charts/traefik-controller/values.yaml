@@ -22,6 +22,13 @@ service:
     web: 80
     # -- HTTPS entrypoint port
     websecure: 443
+  # -- Static IP address for the LoadBalancer (set to a pre-reserved IP)
+  loadBalancerIP: ""
+  # -- Use an internal (private) load balancer instead of public.
+  # Sets cloud-specific annotations automatically (AWS, GCP, Azure).
+  internal: false
+  # -- Restrict source ranges allowed to access the LoadBalancer
+  loadBalancerSourceRanges: []
   # -- Extra service annotations (e.g., cloud provider LB annotations)
   annotations: {}
 

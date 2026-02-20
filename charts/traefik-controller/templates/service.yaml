@@ -9,9 +9,22 @@ metadata:
   labels:
     {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
   annotations:
-    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" (merge (default (dict) .Values.service.annotations) (default (dict) .Values.annotations))) | nindent 4 }}
+    {{- $svcAnnotations := default (dict) .Values.service.annotations }}
+    {{- if .Values.service.internal }}
+    {{- $_ := set $svcAnnotations "service.beta.kubernetes.io/aws-load-balancer-internal" "true" }}
+    {{- $_ := set $svcAnnotations "networking.gke.io/load-balancer-type" "Internal" }}
+    {{- $_ := set $svcAnnotations "service.beta.kubernetes.io/azure-load-balancer-internal" "true" }}
+    {{- end }}
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" (merge $svcAnnotations (default (dict) .Values.annotations))) | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  {{- with .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   ports:
     - port: {{ .Values.service.ports.web }}
       targetPort: web
