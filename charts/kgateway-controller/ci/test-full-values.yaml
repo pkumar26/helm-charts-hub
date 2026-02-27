@@ -1,0 +1,73 @@
+# CI test values — comprehensive configuration exercising all features
+# Used by chart-testing (ct lint) for full feature validation
+replicaCount: 2
+
+image:
+  registry: cr.kgateway.dev/kgateway-dev
+  repository: kgateway
+  pullPolicy: Always
+
+controller:
+  logLevel: debug
+  enableEnvoy: true
+  validationMode: strict
+  discoveryNamespaceSelectors:
+    - matchLabels:
+        kgateway-discovery: "true"
+  proxy:
+    image:
+      registry: cr.kgateway.dev/kgateway-dev
+      repository: kgateway
+      pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/kgateway
+
+gatewayApi:
+  createGatewayClass: true
+  gatewayClassName: kgateway
+
+metrics:
+  enabled: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 75
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+verticalPodAutoscaler:
+  enabled: true
+  updateMode: "Off"
+  minAllowed:
+    cpu: 100m
+    memory: 128Mi
+  maxAllowed:
+    cpu: "2"
+    memory: 2Gi
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+podAnnotations:
+  custom-annotation: "test"
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "kgateway"
+    effect: "NoSchedule"

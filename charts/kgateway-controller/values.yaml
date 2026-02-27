@@ -1,0 +1,167 @@
+# -- Override the chart name used in resource names.
+nameOverride: ""
+
+# -- Override the full resource name. If set, this is used as-is for all resource names.
+fullnameOverride: ""
+
+# -- Container image configuration
+image:
+  # -- kgateway container image registry
+  registry: cr.kgateway.dev/kgateway-dev
+  # -- kgateway container image repository
+  repository: kgateway
+  # -- kgateway container image tag (defaults to "v" + Chart.AppVersion)
+  tag: ""
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets
+imagePullSecrets: []
+
+# -- Number of controller replicas
+replicaCount: 1
+
+# -- kgateway controller configuration
+controller:
+  # -- Log level (KGW_LOG_LEVEL)
+  logLevel: info
+  # -- Enable Envoy data plane (KGW_ENABLE_ENVOY)
+  enableEnvoy: true
+  # -- Validation mode (KGW_VALIDATION_MODE): standard or strict
+  validationMode: standard
+  # -- Namespace selectors for discovery (KGW_DISCOVERY_NAMESPACE_SELECTORS, JSON array)
+  discoveryNamespaceSelectors: []
+  # -- Policy merge configuration (KGW_POLICY_MERGE, JSON object)
+  policyMerge: {}
+  # -- Go memory limit (GOMEMLIMIT). Leave empty to omit.
+  goMemLimit: ""
+  # -- Go max procs (GOMAXPROCS). Leave empty to omit.
+  goMaxProcs: ""
+  # -- Default proxy image configuration (used by controller to spawn Envoy proxies)
+  proxy:
+    image:
+      # -- Proxy image registry (KGW_DEFAULT_IMAGE_REGISTRY)
+      registry: cr.kgateway.dev/kgateway-dev
+      # -- Proxy image repository
+      repository: kgateway
+      # -- Proxy image tag (KGW_DEFAULT_IMAGE_TAG, defaults to "v" + Chart.AppVersion)
+      tag: ""
+      # -- Proxy image pull policy (KGW_DEFAULT_IMAGE_PULL_POLICY)
+      pullPolicy: IfNotPresent
+
+# -- Service configuration
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service ports
+  ports:
+    # -- xDS gRPC port
+    grpcXds: 9977
+    # -- Health check port
+    health: 9093
+    # -- Prometheus metrics port
+    metrics: 9092
+  # -- Extra service annotations
+  annotations: {}
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# -- Pod security context (applied at pod level)
+podSecurityContext: {}
+
+# -- Container security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10101
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# -- ServiceAccount configuration
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name override (defaults to fullname)
+  name: ""
+  # -- ServiceAccount annotations (e.g., for IRSA or workload identity)
+  annotations: {}
+
+# -- Gateway API configuration
+gatewayApi:
+  # -- Create a GatewayClass resource (controller auto-creates one at runtime; this provides explicit Helm management)
+  createGatewayClass: false
+  # -- GatewayClass name
+  gatewayClassName: kgateway
+
+# -- Prometheus metrics configuration
+metrics:
+  # -- Enable Prometheus scrape annotations on pods
+  enabled: true
+
+# -- Autoscaling (HPA) configuration
+autoscaling:
+  # -- Enable HPA
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 1
+  # -- Maximum replicas
+  maxReplicas: 5
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 80
+
+# -- PodDisruptionBudget configuration
+podDisruptionBudget:
+  # -- Enable PDB
+  enabled: false
+  # -- Minimum number of available pods (mutually exclusive with maxUnavailable)
+  minAvailable: 1
+  # -- Maximum number of unavailable pods (mutually exclusive with minAvailable)
+  maxUnavailable: ""
+
+# -- VerticalPodAutoscaler configuration
+verticalPodAutoscaler:
+  # -- Enable VPA
+  enabled: false
+  # -- VPA update mode: Off, Initial, Recreate, Auto
+  updateMode: "Off"
+  # -- Minimum allowed resources
+  minAllowed:
+    cpu: 100m
+    memory: 128Mi
+  # -- Maximum allowed resources
+  maxAllowed:
+    cpu: "2"
+    memory: 2Gi
+
+# -- Termination grace period in seconds
+terminationGracePeriodSeconds: 10
+
+# -- Node selector constraints
+nodeSelector: {}
+
+# -- Tolerations for taints
+tolerations: []
+
+# -- Affinity and anti-affinity rules
+affinity: {}
+
+# -- Extra pod annotations
+podAnnotations: {}
+
+# -- Extra pod labels
+podLabels: {}
+
+# -- Extra resource labels
+labels: {}
+
+# -- Extra resource annotations
+annotations: {}

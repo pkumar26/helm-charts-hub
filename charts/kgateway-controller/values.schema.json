@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "kgateway-controller values",
+  "description": "JSON Schema for kgateway-controller Helm chart values",
+  "type": "object",
+  "properties": {
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the chart name"
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Override the full resource name"
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": "string",
+          "description": "Container image registry"
+        },
+        "repository": {
+          "type": "string",
+          "description": "Container image repository"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Image tag (defaults to v + Chart.AppVersion)"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "description": "Image pull policy"
+        }
+      },
+      "required": ["registry", "repository"]
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Image pull secrets"
+    },
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of controller replicas"
+    },
+    "controller": {
+      "type": "object",
+      "properties": {
+        "logLevel": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "description": "Log level (KGW_LOG_LEVEL)"
+        },
+        "enableEnvoy": {
+          "type": "boolean",
+          "description": "Enable Envoy data plane (KGW_ENABLE_ENVOY)"
+        },
+        "validationMode": {
+          "type": "string",
+          "enum": ["standard", "strict"],
+          "description": "Validation mode (KGW_VALIDATION_MODE)"
+        },
+        "discoveryNamespaceSelectors": {
+          "type": "array",
+          "description": "Namespace selectors for discovery"
+        },
+        "policyMerge": {
+          "type": "object",
+          "description": "Policy merge configuration"
+        },
+        "goMemLimit": {
+          "type": "string",
+          "description": "Go memory limit (GOMEMLIMIT)"
+        },
+        "goMaxProcs": {
+          "type": "string",
+          "description": "Go max procs (GOMAXPROCS)"
+        },
+        "proxy": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "object",
+              "properties": {
+                "registry": {
+                  "type": "string"
+                },
+                "repository": {
+                  "type": "string"
+                },
+                "tag": {
+                  "type": "string"
+                },
+                "pullPolicy": {
+                  "type": "string",
+                  "enum": ["Always", "IfNotPresent", "Never"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+          "description": "Service type"
+        },
+        "ports": {
+          "type": "object",
+          "properties": {
+            "grpcXds": {
+              "type": "integer",
+              "description": "xDS gRPC port"
+            },
+            "health": {
+              "type": "integer",
+              "description": "Health check port"
+            },
+            "metrics": {
+              "type": "integer",
+              "description": "Prometheus metrics port"
+            }
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Extra service annotations"
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "Pod-level security context"
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "Container security context"
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create a ServiceAccount"
+        },
+        "name": {
+          "type": "string",
+          "description": "ServiceAccount name override"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "ServiceAccount annotations"
+        }
+      }
+    },
+    "gatewayApi": {
+      "type": "object",
+      "properties": {
+        "createGatewayClass": {
+          "type": "boolean",
+          "description": "Create a GatewayClass resource"
+        },
+        "gatewayClassName": {
+          "type": "string",
+          "description": "GatewayClass name"
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Prometheus scrape annotations"
+        }
+      }
+    },
+    "autoscaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable HPA"
+        },
+        "minReplicas": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum replicas"
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum replicas"
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Target CPU utilization percentage"
+        }
+      }
+    },
+    "podDisruptionBudget": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable PDB"
+        },
+        "minAvailable": {
+          "description": "Minimum available pods",
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "string" }
+          ]
+        },
+        "maxUnavailable": {
+          "description": "Maximum unavailable pods",
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "string" }
+          ]
+        }
+      }
+    },
+    "verticalPodAutoscaler": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable VPA"
+        },
+        "updateMode": {
+          "type": "string",
+          "enum": ["Off", "Initial", "Recreate", "Auto"],
+          "description": "VPA update mode"
+        },
+        "minAllowed": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        },
+        "maxAllowed": {
+          "type": "object",
+          "properties": {
+            "cpu": { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        }
+      }
+    },
+    "terminationGracePeriodSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Termination grace period"
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node selector"
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations"
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Affinity rules"
+    },
+    "podAnnotations": {
+      "type": "object",
+      "description": "Extra pod annotations"
+    },
+    "podLabels": {
+      "type": "object",
+      "description": "Extra pod labels"
+    },
+    "labels": {
+      "type": "object",
+      "description": "Extra resource labels"
+    },
+    "annotations": {
+      "type": "object",
+      "description": "Extra resource annotations"
+    }
+  }
+}

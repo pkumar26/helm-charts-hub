@@ -1,0 +1,30 @@
+# Staging environment overlay — kgateway-controller
+replicaCount: 2
+
+controller:
+  logLevel: info
+  enableEnvoy: true
+
+gatewayApi:
+  createGatewayClass: true
+
+metrics:
+  enabled: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi

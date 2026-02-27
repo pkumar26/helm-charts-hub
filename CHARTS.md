@@ -9,3 +9,4 @@ All Helm charts available in this repository.
 | [traefik-controller](charts/traefik-controller/) | Traefik v3 edge controller — Kubernetes Ingress and Gateway API modes | Deployment | [README](charts/traefik-controller/README.md) |
 | [nginx-controller](charts/nginx-controller/) | NGINX Ingress Controller — based on ingress-nginx for Kubernetes Ingress mode | Deployment | [README](charts/nginx-controller/README.md) |
 | [envoy-controller](charts/envoy-controller/) | Envoy Gateway controller — Gateway API-native controller using Envoy Proxy as data plane | Deployment | [README](charts/envoy-controller/README.md) |
+| [kgateway-controller](charts/kgateway-controller/) | kgateway controller — CNCF Gateway API implementation powered by Envoy proxy | Deployment | [README](charts/kgateway-controller/README.md) |
