@@ -90,13 +90,22 @@ Renders a `Gateway` with:
 - Gated: `gateway.enabled`
 - Labels via `common-lib.labels`
 
-### 2.9 _helpers.tpl
+### 2.9 hpa.yaml
+
+Renders a `HorizontalPodAutoscaler` with:
+- Target: Deployment by `common-lib.fullname`
+- Min/max replicas from `autoscaling.minReplicas` / `autoscaling.maxReplicas`
+- CPU target from `autoscaling.targetCPUUtilizationPercentage`
+- Gated: `autoscaling.enabled`
+- Labels via `common-lib.labels`
+
+### 2.10 _helpers.tpl
 
 Local chart helpers:
 - `envoy-gateway.name` — chart name with nameOverride support
 - `envoy-gateway.fullname` — full resource name with fullnameOverride support
 
-### 2.10 NOTES.txt
+### 2.11 NOTES.txt
 
 Post-install instructions showing:
 - GatewayClass name and usage

@@ -50,8 +50,9 @@
 - [ ] T007 [P] [US1] Create ServiceAccount template using common-lib helper in charts/envoy-gateway/templates/serviceaccount.yaml
 - [ ] T008 [US1] Create Deployment template with multi-port, xDS args, health probes, ConfigMap volume mount in charts/envoy-gateway/templates/deployment.yaml
 - [ ] T009 [US1] Create Service template with ClusterIP, gRPC port 18000, conditional metrics port in charts/envoy-gateway/templates/service.yaml
+- [ ] T009b [US1] Create HPA template gated on autoscaling.enabled using common-lib.hpa pattern in charts/envoy-gateway/templates/hpa.yaml
 
-**Checkpoint**: Controller Deployment + Service render correctly via `helm template`. Core MVP is functional.
+**Checkpoint**: Controller Deployment + Service + HPA render correctly via `helm template`. Core MVP is functional.
 
 ---
 
@@ -101,6 +102,7 @@
 - [ ] T019 [P] [US4] Create staging environment overlay in environments/staging/envoy-gateway.values.yaml
 - [ ] T020 [P] [US4] Create production environment overlay in environments/production/envoy-gateway.values.yaml
 - [ ] T021 [P] [US4] Create production example values in examples/envoy-gateway-production.yaml
+- [ ] T021b [P] [US4] Create CHANGELOG.md with initial 0.1.0 entry in charts/envoy-gateway/CHANGELOG.md
 
 **Checkpoint**: All documentation, CI values, and environment overlays are complete.
 

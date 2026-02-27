@@ -57,6 +57,7 @@ specs/003-envoy-gateway-chart/
 
 ```text
 charts/envoy-gateway/
+├── CHANGELOG.md
 ├── Chart.yaml
 ├── README.md
 ├── values.yaml
@@ -73,6 +74,7 @@ charts/envoy-gateway/
 │   ├── configmap.yaml
 │   ├── gateway-class.yaml
 │   ├── gateway.yaml
+│   ├── hpa.yaml
 │   └── NOTES.txt
 
 environments/
@@ -87,7 +89,7 @@ examples/
 └── envoy-gateway-production.yaml
 ```
 
-**Structure Decision**: Follows the established controller chart pattern identical to `traefik-controller`. Custom templates for Deployment, Service, RBAC, and Gateway API resources; common-lib for metadata. No IngressClass since Envoy Gateway is Gateway API-native (not an Ingress controller).
+**Structure Decision**: Follows the established controller chart pattern identical to `traefik-controller`. Custom templates for Deployment, Service, RBAC, Gateway API resources, and HPA; common-lib for metadata. No IngressClass since Envoy Gateway is Gateway API-native (not an Ingress controller).
 
 ## Complexity Tracking
 

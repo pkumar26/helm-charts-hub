@@ -68,7 +68,7 @@ Optionally create a default Gateway resource with configurable listeners for HTT
 Create ClusterRole and ClusterRoleBinding with minimum required permissions for managing Gateway API resources (GatewayClasses, Gateways, HTTPRoutes, GRPCRoutes, TLSRoutes, TCPRoutes, ReferenceGrants, etc.), as well as core resources (Services, Endpoints, Secrets, Namespaces, ConfigMaps).
 
 ### FR-5: Service
-Expose the controller via a ClusterIP Service on its management port (default: 18000 for gRPC xDS, 18001 for health).
+Expose the controller via a ClusterIP Service on its gRPC xDS port (default: 18000). Optionally expose the metrics port (19001) when metrics collection is enabled. Health probes use port 8081 internally and are not exposed on the Service.
 
 ### FR-6: ConfigMap
 Provide an Envoy Gateway configuration via ConfigMap, including gateway controller settings, provider configuration, and logging levels.
