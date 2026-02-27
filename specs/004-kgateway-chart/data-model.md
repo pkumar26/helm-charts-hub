@@ -17,7 +17,7 @@ The kgateway-controller chart produces up to 10 Kubernetes resource types. All r
 | 1 | Deployment | apps/v1 | deployment.yaml | Always | Controller pod with env-var config |
 | 2 | Service | v1 | service.yaml | Always | ClusterIP: xDS, health, metrics |
 | 3 | ServiceAccount | v1 | serviceaccount.yaml | `serviceAccount.create` | Supports annotations for IRSA/workload identity |
-| 4 | ClusterRole | rbac.authorization.k8s.io/v1 | clusterrole.yaml | Always | Extensive permissions for Gateway API + kgateway CRDs |
+| 4 | ClusterRole | rbac.authorization.k8s.io/v1 | clusterrole.yaml | Always | 12 apiGroups covering Gateway API, kgateway CRDs, core, apps, autoscaling, policy, coordination, discovery, apiextensions, authentication |
 | 5 | ClusterRoleBinding | rbac.authorization.k8s.io/v1 | clusterrolebinding.yaml | Always | Binds ClusterRole to ServiceAccount |
 | 6 | GatewayClass | gateway.networking.k8s.io/v1 | gateway-class.yaml | `gatewayApi.createGatewayClass` | Controller name: kgateway.dev/kgateway |
 | 7 | HPA | autoscaling/v2 | hpa.yaml | `autoscaling.enabled` | common-lib based |
@@ -92,7 +92,8 @@ securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
-    drop: [ALL]
+    drop:
+      - ALL
 ```
 
 ---

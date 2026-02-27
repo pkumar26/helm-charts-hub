@@ -5,7 +5,7 @@
 
 ## Summary
 
-Add a `kgateway-controller` Helm chart that deploys the kgateway control plane (v2.2.1) — a CNCF sandbox Gateway API implementation using Envoy as data plane. The chart follows existing controller chart patterns (common-lib dependency, custom templates for Deployment/Service/RBAC) and adds PDB + VPA support.
+Add a `kgateway-controller` Helm chart (see [spec.md](spec.md) for full requirements). The chart deploys the kgateway v2.2.1 control plane, follows existing controller chart patterns (common-lib + custom templates), and adds PDB + VPA support.
 
 ## Technical Context
 
@@ -82,4 +82,4 @@ examples/
 
 **Structure Decision**: Follows established controller chart pattern (traefik-controller, nginx-controller). Custom templates for Deployment, Service, and RBAC; common-lib delegation for ServiceAccount, HPA, labels, annotations, and naming.
 
-> **Constitution §3.2 Note**: Templates "MUST primarily delegate to `common-lib` helpers." The Deployment, Service, ClusterRole, and ClusterRoleBinding use custom templates because the controller has unique needs (env-var config, multi-port, extensive RBAC rules). This follows the same precedent set by `traefik-controller` and `nginx-controller`, which also use custom templates per §3.2's "unique needs" clause. Common-lib is used for labels, annotations, naming, ServiceAccount, and HPA.
+> **Constitution §3.2 Note**: Templates "MUST primarily delegate to `common-lib` helpers." The Deployment, Service, ClusterRole, and ClusterRoleBinding use custom templates because the controller has unique needs (env-var config, multi-port, 12-apiGroup RBAC rules). This follows the same precedent set by `traefik-controller` and `nginx-controller`, which also use custom templates per §3.2's "unique needs" clause. Common-lib is used for labels, annotations, naming, ServiceAccount, and HPA.
