@@ -80,7 +80,7 @@
 
 - **Decision**: Assume Gateway API CRDs are pre-installed. Do NOT bundle CRDs in the chart.
 - **Rationale**: Follows the same pattern as `traefik-controller`. CRDs are cluster-scoped resources with lifecycle independent of any single chart. Bundling CRDs causes upgrade conflicts. The README will document the prerequisite.
-- **Required CRD versions**: Gateway API v1.0+ (GatewayClass, Gateway, HTTPRoute, GRPCRoute, etc.)
+- **Required CRD versions**: Gateway API v1.2+ (GatewayClass, Gateway, HTTPRoute, GRPCRoute, etc.)
 - **Installation**: `kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml`
 
 ## 9. Namespace

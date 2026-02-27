@@ -15,12 +15,12 @@
 | replicas | `.Values.replicaCount` | Default: 1 |
 | image | `.Values.image.repository:tag` | `docker.io/envoyproxy/gateway:v1.3.0` |
 | container args | fixed | `["server", "--config-path=/config/envoy-gateway.yaml"]` |
-| container ports | `.Values.service.containerPorts` | grpc:18000, ratelimit:18001, metrics:19001 |
+| container ports | `.Values.service.containerPorts` | grpc:18000, ratelimit:18001, health:8081, metrics:19001 |
 | env: ENVOY_GATEWAY_NAMESPACE | downward API | `fieldRef: metadata.namespace` |
 | env: KUBERNETES_CLUSTER_DOMAIN | `.Values.kubernetesClusterDomain` | Default: `cluster.local` |
 | volume mounts | fixed | `/config` (ConfigMap, readOnly) |
-| liveness probe | `.Values.livenessProbe` | HTTP GET `/healthz` port 8081 |
-| readiness probe | `.Values.readinessProbe` | HTTP GET `/readyz` port 8081 |
+| liveness probe | hardcoded | HTTP GET `/healthz` port 8081, initialDelay: 15s, period: 20s |
+| readiness probe | hardcoded | HTTP GET `/readyz` port 8081, initialDelay: 5s, period: 10s |
 | security context | `.Values.securityContext` | runAsNonRoot, drop ALL caps |
 | pod security context | `.Values.podSecurityContext` | runAsNonRoot, runAsUser: 65532 |
 | resources | `.Values.resources` | 100m/256Mi request, 500m/512Mi limit |
@@ -34,7 +34,6 @@
 | name | `common-lib.fullname` | Standard naming |
 | type | `.Values.service.type` | Default: ClusterIP |
 | port: grpc | `.Values.service.ports.grpc` | 18000 → 18000 |
-| port: ratelimit | `.Values.service.ports.ratelimit` | 18001 → 18001 (optional) |
 | port: metrics | `.Values.service.ports.metrics` | 19001 → 19001 (conditional on metrics.enabled) |
 
 ### 1.3 ServiceAccount
@@ -170,9 +169,10 @@ rules:
 | `resources` | object | {requests: 100m/256Mi, limits: 500m/512Mi} | Resource limits |
 | `service.type` | string | `ClusterIP` | Service type |
 | `service.ports.grpc` | int | `18000` | xDS gRPC port |
-| `service.ports.ratelimit` | int | `18001` | Ratelimit port |
 | `service.containerPorts.grpc` | int | `18000` | Container xDS gRPC port |
 | `service.containerPorts.ratelimit` | int | `18001` | Container ratelimit port |
+| `service.containerPorts.health` | int | `8081` | Container health probe port (not on Service) |
+| `service.containerPorts.metrics` | int | `19001` | Container metrics port |
 | `service.annotations` | object | `{}` | Extra service annotations |
 | `serviceAccount.create` | bool | `true` | Create ServiceAccount |
 | `serviceAccount.name` | string | `""` | SA name override |
@@ -185,6 +185,8 @@ rules:
 | `gateway.name` | string | `envoy-gateway` | Gateway name |
 | `gateway.namespace` | string | `""` | Gateway namespace |
 | `gateway.listeners` | list | [{http:80}, {https:443}] | Gateway listeners |
+| `config.gateway.controllerName` | string | `gateway.envoyproxy.io/gatewayclass-controller` | Controller name in config (hardcoded default) |
+| `config.provider.type` | string | `Kubernetes` | Provider type (hardcoded default) |
 | `config.logging.level.default` | string | `info` | Logging level |
 | `kubernetesClusterDomain` | string | `cluster.local` | K8s cluster domain |
 | `metrics.enabled` | bool | `false` | Expose metrics port on service |
