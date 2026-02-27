@@ -19,11 +19,11 @@
 
 **Purpose**: Create chart scaffolding, config, and common-lib dependency
 
-- [ ] T001 Create chart directory and Chart.yaml in charts/kgateway-controller/Chart.yaml
-- [ ] T002 Create values.yaml with canonical values shape in charts/kgateway-controller/values.yaml
-- [ ] T003 [P] Create CHANGELOG.md with initial 0.1.0 entry in charts/kgateway-controller/CHANGELOG.md
-- [ ] T004 Create _helpers.tpl with naming, labels, selector, and imageTag helpers in charts/kgateway-controller/templates/_helpers.tpl
-- [ ] T005 Add common-lib dependency (helm dependency update) in charts/kgateway-controller/
+- [X] T001 Create chart directory and Chart.yaml in charts/kgateway-controller/Chart.yaml
+- [X] T002 Create values.yaml with canonical values shape in charts/kgateway-controller/values.yaml
+- [X] T003 [P] Create CHANGELOG.md with initial 0.1.0 entry in charts/kgateway-controller/CHANGELOG.md
+- [X] T004 Create _helpers.tpl with naming, labels, selector, and imageTag helpers in charts/kgateway-controller/templates/_helpers.tpl
+- [X] T005 Add common-lib dependency (helm dependency update) in charts/kgateway-controller/
 
 **Checkpoint**: Chart scaffolding ready — `helm dependency update` succeeds, `helm lint` passes with empty templates.
 
@@ -35,9 +35,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create ServiceAccount template delegating to `common-lib.serviceaccount` in charts/kgateway-controller/templates/serviceaccount.yaml
-- [ ] T007 Create ClusterRole template with full RBAC rules (Gateway API, kgateway CRDs, core, apps, autoscaling, coordination, discovery, apiextensions, authentication) in charts/kgateway-controller/templates/clusterrole.yaml
-- [ ] T008 Create ClusterRoleBinding template in charts/kgateway-controller/templates/clusterrolebinding.yaml
+- [X] T006 Create ServiceAccount template delegating to `common-lib.serviceaccount` in charts/kgateway-controller/templates/serviceaccount.yaml
+- [X] T007 Create ClusterRole template with full RBAC rules (Gateway API, kgateway CRDs, core, apps, autoscaling, coordination, discovery, apiextensions, authentication) in charts/kgateway-controller/templates/clusterrole.yaml
+- [X] T008 Create ClusterRoleBinding template in charts/kgateway-controller/templates/clusterrolebinding.yaml
 
 **Checkpoint**: Foundation ready — `helm template` renders ServiceAccount, ClusterRole, ClusterRoleBinding with correct labels. User story implementation can begin.
 
@@ -51,11 +51,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Create Deployment template with kgateway container, env vars, ports, probes, and security context in charts/kgateway-controller/templates/deployment.yaml
-- [ ] T010 [P] [US1] Create Service template with grpc-xds (9977), health (9093), metrics (9092) ports in charts/kgateway-controller/templates/service.yaml
-- [ ] T011 [P] [US1] Create NOTES.txt with installation summary and connection instructions in charts/kgateway-controller/templates/NOTES.txt
-- [ ] T012 [P] [US1] Create CI minimal test values in charts/kgateway-controller/ci/test-values.yaml
-- [ ] T013 [US1] Validate: run `helm lint` and `helm template` with default values — verify Deployment, Service, ServiceAccount, ClusterRole, ClusterRoleBinding render correctly
+- [X] T009 [P] [US1] Create Deployment template with kgateway container, env vars, ports, probes, and security context in charts/kgateway-controller/templates/deployment.yaml
+- [X] T010 [P] [US1] Create Service template with grpc-xds (9977), health (9093), metrics (9092) ports in charts/kgateway-controller/templates/service.yaml
+- [X] T011 [P] [US1] Create NOTES.txt with installation summary and connection instructions in charts/kgateway-controller/templates/NOTES.txt
+- [X] T012 [P] [US1] Create CI minimal test values in charts/kgateway-controller/ci/test-values.yaml
+- [X] T013 [US1] Validate: run `helm lint` and `helm template` with default values — verify Deployment, Service, ServiceAccount, ClusterRole, ClusterRoleBinding render correctly
 
 **Checkpoint**: MVP complete — kgateway controller deploys with correct configuration, service exposes xDS/health/metrics, RBAC is applied.
 
@@ -69,8 +69,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Create GatewayClass template gated by gatewayApi.createGatewayClass in charts/kgateway-controller/templates/gateway-class.yaml
-- [ ] T015 [US2] Validate: run `helm template --set gatewayApi.createGatewayClass=true` — verify GatewayClass renders with controllerName: kgateway.dev/kgateway and correct labels
+- [X] T014 [US2] Create GatewayClass template gated by gatewayApi.createGatewayClass in charts/kgateway-controller/templates/gateway-class.yaml
+- [X] T015 [US2] Validate: run `helm template --set gatewayApi.createGatewayClass=true` — verify GatewayClass renders with controllerName: kgateway.dev/kgateway and correct labels
 
 **Checkpoint**: GatewayClass gating works — present when enabled, absent by default.
 
@@ -84,8 +84,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Create HPA template using common-lib.hpa helper in charts/kgateway-controller/templates/hpa.yaml
-- [ ] T017 [US3] Validate: run `helm template --set autoscaling.enabled=true` — verify HPA renders with correct target and default thresholds
+- [X] T016 [US3] Create HPA template using common-lib.hpa helper in charts/kgateway-controller/templates/hpa.yaml
+- [X] T017 [US3] Validate: run `helm template --set autoscaling.enabled=true` — verify HPA renders with correct target and default thresholds
 
 **Checkpoint**: HPA gating works — present when enabled, absent by default.
 
@@ -99,9 +99,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T018 [P] [US4] Create PDB template gated by podDisruptionBudget.enabled in charts/kgateway-controller/templates/pdb.yaml
-- [ ] T019 [P] [US4] Create VPA template gated by verticalPodAutoscaler.enabled in charts/kgateway-controller/templates/vpa.yaml
-- [ ] T020 [US4] Validate: run `helm template` with PDB and VPA enabled — verify both render with correct selectors and target refs
+- [X] T018 [P] [US4] Create PDB template gated by podDisruptionBudget.enabled in charts/kgateway-controller/templates/pdb.yaml
+- [X] T019 [P] [US4] Create VPA template gated by verticalPodAutoscaler.enabled in charts/kgateway-controller/templates/vpa.yaml
+- [X] T020 [US4] Validate: run `helm template` with PDB and VPA enabled — verify both render with correct selectors and target refs
 
 **Checkpoint**: Extended resources gating works — PDB and VPA each independently toggleable.
 
@@ -115,13 +115,13 @@
 
 ### Implementation for User Story 5
 
-- [ ] T021 [P] [US5] Create comprehensive CI test values in charts/kgateway-controller/ci/test-full-values.yaml
-- [ ] T022 [P] [US5] Create dev environment overlay in environments/dev/kgateway-controller.values.yaml
-- [ ] T023 [P] [US5] Create staging environment overlay in environments/staging/kgateway-controller.values.yaml
-- [ ] T024 [P] [US5] Create production environment overlay in environments/production/kgateway-controller.values.yaml
-- [ ] T025 [P] [US5] Create production example in examples/kgateway-controller-production.yaml
-- [ ] T026 [US5] Create README.md with all 7 required sections per constitution §9.2 (Overview, Prerequisites, Installation, Configuration, Examples, Upgrade Notes, Troubleshooting) in charts/kgateway-controller/README.md
-- [ ] T027 [US5] Validate: run `helm lint` with default, test-values.yaml, and test-full-values.yaml — all must pass with zero errors
+- [X] T021 [P] [US5] Create comprehensive CI test values in charts/kgateway-controller/ci/test-full-values.yaml
+- [X] T022 [P] [US5] Create dev environment overlay in environments/dev/kgateway-controller.values.yaml
+- [X] T023 [P] [US5] Create staging environment overlay in environments/staging/kgateway-controller.values.yaml
+- [X] T024 [P] [US5] Create production environment overlay in environments/production/kgateway-controller.values.yaml
+- [X] T025 [P] [US5] Create production example in examples/kgateway-controller-production.yaml
+- [X] T026 [US5] Create README.md with all 7 required sections per constitution §9.2 (Overview, Prerequisites, Installation, Configuration, Examples, Upgrade Notes, Troubleshooting) in charts/kgateway-controller/README.md
+- [X] T027 [US5] Validate: run `helm lint` with default, test-values.yaml, and test-full-values.yaml — all must pass with zero errors
 
 **Checkpoint**: Full documentation and CI artifacts complete. Chart is ready for review.
 
@@ -131,10 +131,10 @@
 
 **Purpose**: Final validation, CHARTS.md update, and quickstart walkthrough
 
-- [ ] T028 [P] Update CHARTS.md to add kgateway-controller entry at repo root CHARTS.md
-- [ ] T029 [P] Create values.schema.json with JSON Schema validation for required and typed values in charts/kgateway-controller/values.schema.json
-- [ ] T030 Run full chart-testing lint: `ct lint --config ct.yaml --charts charts/kgateway-controller`
-- [ ] T031 Run quickstart.md validation: verify `helm template` renders all resources for both minimal and production configurations
+- [X] T028 [P] Update CHARTS.md to add kgateway-controller entry at repo root CHARTS.md
+- [X] T029 [P] Create values.schema.json with JSON Schema validation for required and typed values in charts/kgateway-controller/values.schema.json
+- [X] T030 Run full chart-testing lint: `ct lint --config ct.yaml --charts charts/kgateway-controller`
+- [X] T031 Run quickstart.md validation: verify `helm template` renders all resources for both minimal and production configurations
 
 ---
 
