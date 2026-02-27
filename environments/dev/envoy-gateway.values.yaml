@@ -1,0 +1,20 @@
+# Envoy Gateway — dev environment overlay
+replicaCount: 1
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+gateway:
+  enabled: true
+  name: envoy-gateway
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+config:
+  logging:
+    level:
+      default: debug

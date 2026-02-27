@@ -1,0 +1,176 @@
+# -- Override the chart name used in resource names.
+nameOverride: ""
+
+# -- Override the full resource name. If set, this is used as-is for all resource names.
+fullnameOverride: ""
+
+# -- Container image configuration
+image:
+  # -- Envoy Gateway container image repository
+  repository: docker.io/envoyproxy/gateway
+  # -- Envoy Gateway container image tag
+  tag: "v1.3.0"
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+
+# -- Number of controller replicas
+replicaCount: 1
+
+# -- Service configuration (ClusterIP for controller)
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service ports (exposed on the Service)
+  ports:
+    # -- xDS gRPC port for Envoy Proxy fleet
+    grpc: 18000
+  # -- Container ports (internal)
+  containerPorts:
+    # -- xDS gRPC port
+    grpc: 18000
+    # -- Ratelimit xDS port
+    ratelimit: 18001
+    # -- Health probe port (liveness + readiness, not exposed on Service)
+    health: 8081
+    # -- Prometheus metrics port
+    metrics: 19001
+  # -- Extra service annotations
+  annotations: {}
+
+# -- Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+
+# -- Container security context
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+# -- ServiceAccount configuration
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name override
+  name: ""
+  # -- ServiceAccount annotations
+  annotations: {}
+
+# -- RBAC configuration
+rbac:
+  # -- Create ClusterRole and ClusterRoleBinding
+  create: true
+
+# -- GatewayClass configuration
+gatewayClass:
+  # -- Create a GatewayClass resource
+  create: true
+  # -- GatewayClass name
+  name: envoy
+  # -- GatewayClass controller name
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+
+# -- Gateway configuration
+gateway:
+  # -- Create a default Gateway resource
+  enabled: false
+  # -- Gateway name
+  name: envoy-gateway
+  # -- Gateway namespace (defaults to release namespace)
+  namespace: ""
+  # -- Gateway listeners
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+    - name: https
+      port: 443
+      protocol: HTTPS
+
+# -- Envoy Gateway controller configuration (rendered into ConfigMap)
+config:
+  # -- Gateway controller settings
+  gateway:
+    # -- Controller name in EnvoyGateway config
+    controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  # -- Provider settings
+  provider:
+    # -- Provider type
+    type: Kubernetes
+  # -- Logging settings
+  logging:
+    level:
+      # -- Default logging level
+      default: info
+
+# -- Kubernetes cluster domain
+kubernetesClusterDomain: cluster.local
+
+# -- Metrics configuration
+metrics:
+  # -- Expose metrics port on Service
+  enabled: false
+  # -- Prometheus metrics port
+  port: 19001
+
+# -- Autoscaling (HPA) configuration
+autoscaling:
+  # -- Enable HPA
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 1
+  # -- Maximum replicas
+  maxReplicas: 5
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 80
+
+# -- Termination grace period in seconds
+terminationGracePeriodSeconds: 10
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Extra pod annotations
+podAnnotations: {}
+
+# -- Extra pod labels
+podLabels: {}
+
+# -- Extra resource labels
+labels: {}
+
+# -- Extra resource annotations
+annotations: {}
+
+# -- Extra environment variables
+extraEnv: []
+
+# -- Extra volumes
+extraVolumes: []
+
+# -- Extra volume mounts
+extraVolumeMounts: []
+
+# -- Extra container args
+extraArgs: []

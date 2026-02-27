@@ -1,0 +1,74 @@
+# Envoy Gateway — production example
+# Full-featured production deployment with HPA and pod anti-affinity.
+# Requires Gateway API CRDs v1.2+ pre-installed.
+#
+# Usage:
+#   helm install envoy-gateway charts/envoy-gateway -f examples/envoy-gateway-production.yaml
+
+replicaCount: 2
+
+image:
+  repository: docker.io/envoyproxy/gateway
+  tag: "v1.3.0"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+service:
+  type: ClusterIP
+  ports:
+    grpc: 18000
+
+gatewayClass:
+  create: true
+  name: envoy
+
+gateway:
+  enabled: true
+  name: envoy-gateway
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+    - name: https
+      port: 443
+      protocol: HTTPS
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+metrics:
+  enabled: true
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - envoy-gateway
+          topologyKey: kubernetes.io/hostname
+
+config:
+  logging:
+    level:
+      default: info

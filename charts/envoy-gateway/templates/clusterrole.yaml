@@ -1,0 +1,141 @@
+{{/*
+ClusterRole for Envoy Gateway — grants permissions for Gateway API resources,
+core resources, apps/deployments (data plane), autoscaling, and leader election.
+*/}}
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+rules:
+  # Core resources — cluster-scoped
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  # Core resources — namespaced
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - secrets
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  # Core resources — events
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  # Core resources — for data plane management
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+      - services
+      - configmaps
+    verbs:
+      - create
+      - get
+      - list
+      - delete
+      - patch
+  # Discovery
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  # Apps — for data plane deployment management
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - get
+      - list
+      - delete
+      - patch
+      - watch
+  # Autoscaling — for data plane HPA
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - create
+      - get
+      - list
+      - delete
+      - patch
+  # Gateway API — read
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses
+      - gateways
+      - httproutes
+      - grpcroutes
+      - tcproutes
+      - tlsroutes
+      - udproutes
+      - referencegrants
+      - backendtlspolicies
+    verbs:
+      - get
+      - list
+      - watch
+  # Gateway API — status updates
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses/status
+      - gateways/status
+      - httproutes/status
+      - grpcroutes/status
+      - tcproutes/status
+      - tlsroutes/status
+      - udproutes/status
+      - backendtlspolicies/status
+    verbs:
+      - update
+  # Gateway API — class updates
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses
+    verbs:
+      - patch
+      - update
+  # Leader election
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+{{- end }}

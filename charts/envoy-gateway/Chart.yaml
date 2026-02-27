@@ -1,0 +1,10 @@
+apiVersion: v2
+name: envoy-gateway
+description: Envoy Gateway controller chart for helm-charts-hub — Gateway API-native controller using Envoy Proxy as data plane
+type: application
+version: 0.1.0
+appVersion: "1.3.0"
+dependencies:
+  - name: common-lib
+    version: ">=0.1.0 <1.0.0"
+    repository: "file://../common-lib"

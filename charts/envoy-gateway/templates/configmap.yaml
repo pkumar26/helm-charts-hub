@@ -1,0 +1,23 @@
+{{/*
+ConfigMap for Envoy Gateway controller configuration.
+Mounted at /config in the controller container.
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common-lib.fullname" . }}-config
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+data:
+  envoy-gateway.yaml: |
+    apiVersion: gateway.envoyproxy.io/v1alpha1
+    kind: EnvoyGateway
+    gateway:
+      controllerName: {{ .Values.config.gateway.controllerName }}
+    provider:
+      type: {{ .Values.config.provider.type }}
+    logging:
+      level:
+        default: {{ .Values.config.logging.level.default }}

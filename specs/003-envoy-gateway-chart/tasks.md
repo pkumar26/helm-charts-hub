@@ -19,9 +19,9 @@
 
 **Purpose**: Create chart directory structure and initialize Helm chart metadata
 
-- [ ] T001 Create chart directory structure at charts/envoy-gateway/templates/ and charts/envoy-gateway/ci/
-- [ ] T002 Create Chart.yaml with common-lib dependency in charts/envoy-gateway/Chart.yaml
-- [ ] T003 Run `helm dependency build` for charts/envoy-gateway to fetch common-lib
+- [X] T001 Create chart directory structure at charts/envoy-gateway/templates/ and charts/envoy-gateway/ci/
+- [X] T002 Create Chart.yaml with common-lib dependency in charts/envoy-gateway/Chart.yaml
+- [X] T003 Run `helm dependency build` for charts/envoy-gateway to fetch common-lib
 
 ---
 
@@ -31,8 +31,8 @@
 
 **⚠️ CRITICAL**: No template work can begin until this phase is complete
 
-- [ ] T004 Create values.yaml with full schema and sensible defaults in charts/envoy-gateway/values.yaml
-- [ ] T005 Create local chart helpers (_helpers.tpl) with name/fullname overrides in charts/envoy-gateway/templates/_helpers.tpl
+- [X] T004 Create values.yaml with full schema and sensible defaults in charts/envoy-gateway/values.yaml
+- [X] T005 Create local chart helpers (_helpers.tpl) with name/fullname overrides in charts/envoy-gateway/templates/_helpers.tpl
 
 **Checkpoint**: Chart scaffolding ready — template implementation can now begin
 
@@ -46,11 +46,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create ConfigMap template with EnvoyGateway configuration in charts/envoy-gateway/templates/configmap.yaml
-- [ ] T007 [P] [US1] Create ServiceAccount template using common-lib helper in charts/envoy-gateway/templates/serviceaccount.yaml
-- [ ] T008 [US1] Create Deployment template with multi-port, xDS args, health probes, ConfigMap volume mount in charts/envoy-gateway/templates/deployment.yaml
-- [ ] T009 [US1] Create Service template with ClusterIP, gRPC port 18000, conditional metrics port in charts/envoy-gateway/templates/service.yaml
-- [ ] T009b [US1] Create HPA template gated on autoscaling.enabled using common-lib.hpa pattern in charts/envoy-gateway/templates/hpa.yaml
+- [X] T006 [P] [US1] Create ConfigMap template with EnvoyGateway configuration in charts/envoy-gateway/templates/configmap.yaml
+- [X] T007 [P] [US1] Create ServiceAccount template using common-lib helper in charts/envoy-gateway/templates/serviceaccount.yaml
+- [X] T008 [US1] Create Deployment template with multi-port, xDS args, health probes, ConfigMap volume mount in charts/envoy-gateway/templates/deployment.yaml
+- [X] T009 [US1] Create Service template with ClusterIP, gRPC port 18000, conditional metrics port in charts/envoy-gateway/templates/service.yaml
+- [X] T009b [US1] Create HPA template gated on autoscaling.enabled using common-lib.hpa pattern in charts/envoy-gateway/templates/hpa.yaml
 
 **Checkpoint**: Controller Deployment + Service + HPA render correctly via `helm template`. Core MVP is functional.
 
@@ -64,8 +64,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Create ClusterRole template with Gateway API, core, apps, autoscaling, and coordination permissions in charts/envoy-gateway/templates/clusterrole.yaml
-- [ ] T011 [P] [US2] Create ClusterRoleBinding template binding ClusterRole to ServiceAccount in charts/envoy-gateway/templates/clusterrolebinding.yaml
+- [X] T010 [P] [US2] Create ClusterRole template with Gateway API, core, apps, autoscaling, and coordination permissions in charts/envoy-gateway/templates/clusterrole.yaml
+- [X] T011 [P] [US2] Create ClusterRoleBinding template binding ClusterRole to ServiceAccount in charts/envoy-gateway/templates/clusterrolebinding.yaml
 
 **Checkpoint**: RBAC resources render and are properly gated behind `rbac.create`.
 
@@ -79,8 +79,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [P] [US3] Create GatewayClass template gated on gatewayClass.create in charts/envoy-gateway/templates/gateway-class.yaml
-- [ ] T013 [P] [US3] Create Gateway template with configurable listeners gated on gateway.enabled in charts/envoy-gateway/templates/gateway.yaml
+- [X] T012 [P] [US3] Create GatewayClass template gated on gatewayClass.create in charts/envoy-gateway/templates/gateway-class.yaml
+- [X] T013 [P] [US3] Create Gateway template with configurable listeners gated on gateway.enabled in charts/envoy-gateway/templates/gateway.yaml
 
 **Checkpoint**: Gateway API resources render correctly with proper feature flags.
 
@@ -94,15 +94,15 @@
 
 ### Implementation for User Story 4
 
-- [ ] T014 [P] [US4] Create NOTES.txt with post-install instructions in charts/envoy-gateway/templates/NOTES.txt
-- [ ] T015 [P] [US4] Create CI test-values.yaml (basic mode, no Gateway) in charts/envoy-gateway/ci/test-values.yaml
-- [ ] T016 [P] [US4] Create CI test-gateway-values.yaml (Gateway enabled) in charts/envoy-gateway/ci/test-gateway-values.yaml
-- [ ] T017 [P] [US4] Create README.md with all required sections per constitution §9.2 in charts/envoy-gateway/README.md
-- [ ] T018 [P] [US4] Create dev environment overlay in environments/dev/envoy-gateway.values.yaml
-- [ ] T019 [P] [US4] Create staging environment overlay in environments/staging/envoy-gateway.values.yaml
-- [ ] T020 [P] [US4] Create production environment overlay in environments/production/envoy-gateway.values.yaml
-- [ ] T021 [P] [US4] Create production example values in examples/envoy-gateway-production.yaml
-- [ ] T021b [P] [US4] Create CHANGELOG.md with initial 0.1.0 entry in charts/envoy-gateway/CHANGELOG.md
+- [X] T014 [P] [US4] Create NOTES.txt with post-install instructions in charts/envoy-gateway/templates/NOTES.txt
+- [X] T015 [P] [US4] Create CI test-values.yaml (basic mode, no Gateway) in charts/envoy-gateway/ci/test-values.yaml
+- [X] T016 [P] [US4] Create CI test-gateway-values.yaml (Gateway enabled) in charts/envoy-gateway/ci/test-gateway-values.yaml
+- [X] T017 [P] [US4] Create README.md with all required sections per constitution §9.2 in charts/envoy-gateway/README.md
+- [X] T018 [P] [US4] Create dev environment overlay in environments/dev/envoy-gateway.values.yaml
+- [X] T019 [P] [US4] Create staging environment overlay in environments/staging/envoy-gateway.values.yaml
+- [X] T020 [P] [US4] Create production environment overlay in environments/production/envoy-gateway.values.yaml
+- [X] T021 [P] [US4] Create production example values in examples/envoy-gateway-production.yaml
+- [X] T021b [P] [US4] Create CHANGELOG.md with initial 0.1.0 entry in charts/envoy-gateway/CHANGELOG.md
 
 **Checkpoint**: All documentation, CI values, and environment overlays are complete.
 
@@ -112,15 +112,15 @@
 
 **Purpose**: Validation, integration with the broader repository, and final quality checks
 
-- [ ] T022 Update root CHARTS.md with envoy-gateway chart entry
-- [ ] T023 Run `helm dependency build` for charts/envoy-gateway
-- [ ] T024 Run `helm lint charts/envoy-gateway` — zero errors
-- [ ] T025 Run `helm lint charts/envoy-gateway -f charts/envoy-gateway/ci/test-values.yaml` — zero errors
-- [ ] T026 Run `helm lint charts/envoy-gateway -f charts/envoy-gateway/ci/test-gateway-values.yaml` — zero errors
-- [ ] T027 Run `helm template charts/envoy-gateway` — validate all resources render
-- [ ] T028 Run `helm template charts/envoy-gateway -f charts/envoy-gateway/ci/test-gateway-values.yaml` — validate Gateway resources render
-- [ ] T029 Validate all resources carry 6 base labels + 2 base annotations from common-lib
-- [ ] T030 Run quickstart.md validation — verify documented commands work
+- [X] T022 Update root CHARTS.md with envoy-gateway chart entry
+- [X] T023 Run `helm dependency build` for charts/envoy-gateway
+- [X] T024 Run `helm lint charts/envoy-gateway` — zero errors
+- [X] T025 Run `helm lint charts/envoy-gateway -f charts/envoy-gateway/ci/test-values.yaml` — zero errors
+- [X] T026 Run `helm lint charts/envoy-gateway -f charts/envoy-gateway/ci/test-gateway-values.yaml` — zero errors
+- [X] T027 Run `helm template charts/envoy-gateway` — validate all resources render
+- [X] T028 Run `helm template charts/envoy-gateway -f charts/envoy-gateway/ci/test-gateway-values.yaml` — validate Gateway resources render
+- [X] T029 Validate all resources carry 6 base labels + 2 base annotations from common-lib
+- [X] T030 Run quickstart.md validation — verify documented commands work
 
 ---
 

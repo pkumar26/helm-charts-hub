@@ -1,0 +1,29 @@
+# CI test values that enable the default Gateway resource
+replicaCount: 1
+
+image:
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+gatewayClass:
+  create: true
+  name: envoy-ci
+
+gateway:
+  enabled: true
+  name: eg-ci
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+
+autoscaling:
+  enabled: false
+
+metrics:
+  enabled: true
