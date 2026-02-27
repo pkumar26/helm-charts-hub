@@ -37,7 +37,7 @@ dependencies:
 
 ### deployment.yaml
 - **Always created**: Yes
-- **Uses common-lib**: `common-lib.labels`, `common-lib.annotations`, `common-lib.podSecurity`
+- **Uses common-lib**: `common-lib.labels`, `common-lib.annotations`; selector labels via chart-specific `kgateway-controller.selectorLabels` (shared with PDB/VPA); security context applied inline from `.Values.securityContext` (not `common-lib.podSecurity`), matching controller-chart precedent
 - **Container**: Single container named `kgateway`
 - **Image**: `{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ include "kgateway-controller.imageTag" . }}`
 - **Ports**: grpc-xds (9977), health (9093), metrics (9092)

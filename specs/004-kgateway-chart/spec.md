@@ -32,7 +32,7 @@ The chart follows the same `common-lib` integration pattern established by `trae
 - Deploy kgateway v2.2.1 as a Gateway API controller on Kubernetes
 - Provide GatewayClass and supporting RBAC resources
 - Reuse common-lib helpers for labels, annotations, naming, and service accounts
-- Provide production-ready defaults (security context, RBAC, resource limits)
+- Provide production-ready defaults: `runAsNonRoot`/`readOnlyRootFilesystem` security context, least-privilege RBAC, CPU/memory requests and limits, startup+readiness probes
 - Include extended resources: HPA, PDB, VPA (all gated behind feature flags)
 - Include CI test values, README, and environment overlays for dev/staging/production
 - Follow all repository conventions from the constitution

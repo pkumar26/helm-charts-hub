@@ -59,8 +59,8 @@ ports:
 | `KGW_DEFAULT_IMAGE_PULL_POLICY` | values | `{{ .Values.controller.proxy.image.pullPolicy }}` |
 | `KGW_ENABLE_ENVOY` | values | `{{ .Values.controller.enableEnvoy }}` |
 | `KGW_VALIDATION_MODE` | values | `{{ .Values.controller.validationMode }}` |
-| `KGW_DISCOVERY_NAMESPACE_SELECTORS` | values | `{{ .Values.controller.discoveryNamespaceSelectors \| toJson }}` |
-| `KGW_POLICY_MERGE` | values | `{{ .Values.controller.policyMerge \| toJson }}` (if set) |
+| `KGW_DISCOVERY_NAMESPACE_SELECTORS` | values | `{{ .Values.controller.discoveryNamespaceSelectors \| toJson }}` (omitted when empty `[]`) |
+| `KGW_POLICY_MERGE` | values | `{{ .Values.controller.policyMerge \| toJson }}` (omitted when empty `{}`) |
 | `GOMEMLIMIT` | values | `{{ .Values.controller.goMemLimit }}` (if set) |
 | `GOMAXPROCS` | values | `{{ .Values.controller.goMaxProcs }}` (if set) |
 
@@ -357,6 +357,9 @@ spec:
 | `resources.requests.memory` | string | `256Mi` | Memory request |
 | `resources.limits.cpu` | string | `500m` | CPU limit |
 | `resources.limits.memory` | string | `512Mi` | Memory limit |
+
+> **Schema `required` fields**: `values.schema.json` marks `image.registry` and `image.repository` as required. All other fields have defaults and are optional. `replicaCount` has a `minimum: 1` constraint.
+
 | `nodeSelector` | object | `{}` | Node selector |
 | `tolerations` | list | `[]` | Tolerations |
 | `affinity` | object | `{}` | Affinity |
