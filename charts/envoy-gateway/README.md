@@ -15,8 +15,10 @@ Envoy Gateway controller chart for helm-charts-hub — Gateway API-native contro
 Install Gateway API CRDs:
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 ```
+
+> **Note**: `--force-conflicts` is required if CRDs were previously installed by another field manager (e.g., Helm or a prior `kubectl apply`).
 
 ## Installing the Chart
 
@@ -163,3 +165,44 @@ helm uninstall envoy-gateway
 - [Envoy Gateway Documentation](https://gateway.envoyproxy.io/)
 - [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/)
 - [Getting Started](../../docs/getting-started.md)
+
+## Troubleshooting
+
+### Gateway API CRD conflicts on apply
+
+If you see errors like:
+
+```
+Apply failed with 3 conflicts: conflicts with "helm" using apiextensions.k8s.io/v1
+```
+
+This happens when the CRDs were previously managed by another field manager (e.g., Helm or a prior `kubectl apply`). Fix with:
+
+```bash
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+```
+
+`--force-conflicts` tells the server-side apply to take ownership of the conflicting fields.
+
+### Controller pods not starting
+
+Check that RBAC resources were created:
+
+```bash
+kubectl describe clusterrole <release-name>-envoy-gateway
+kubectl describe clusterrolebinding <release-name>-envoy-gateway
+```
+
+Verify Gateway API CRDs are installed:
+
+```bash
+kubectl get crd gatewayclasses.gateway.networking.k8s.io
+```
+
+### GatewayClass not accepted
+
+Check the controller logs:
+
+```bash
+kubectl logs -n <namespace> -l app.kubernetes.io/name=envoy-gateway
+```

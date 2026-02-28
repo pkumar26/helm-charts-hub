@@ -11,7 +11,7 @@
 2. **Helm 3.x** installed
 3. **Gateway API CRDs** installed:
    ```bash
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+   kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
    ```
 
 ## Installation
@@ -110,5 +110,5 @@ kubectl delete namespace envoy-gateway-system
 
 **Note**: Gateway API CRDs are not removed by `helm uninstall`. Remove them manually if needed:
 ```bash
-kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml
+kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 ```

@@ -145,14 +145,74 @@ Test with:
 curl -H "Host: my-app.local" http://localhost:80
 ```
 
-## 6. Clean Up
+## 6. Try Gateway API Routing (Optional)
+
+As an alternative to Ingress, you can use the Kubernetes Gateway API with Traefik or Envoy Gateway.
+
+### Install Gateway API CRDs
+
+```bash
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+```
+
+> **Note**: `--force-conflicts` is required if CRDs were previously installed by another field manager (e.g., Helm).
+
+### Option A: Traefik with Gateway API
+
+```bash
+helm dependency build charts/traefik-controller
+helm install traefik-controller charts/traefik-controller \
+  --namespace traefik-controller --create-namespace \
+  --set service.type=NodePort \
+  --set gatewayApi.enabled=true \
+  --set providers.kubernetesGateway.enabled=true
+```
+
+### Option B: Envoy Gateway
+
+```bash
+helm dependency build charts/envoy-gateway
+helm install envoy-gateway charts/envoy-gateway \
+  --namespace envoy-gateway-system --create-namespace \
+  --set gateway.enabled=true
+```
+
+### Create an HTTPRoute
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: my-app-route
+spec:
+  parentRefs:
+    - name: traefik-gateway        # or: envoy-gateway
+      namespace: traefik-controller # or: envoy-gateway-system
+  hostnames:
+    - "my-app.local"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: my-app-web-app
+          port: 80
+```
+
+## 7. Clean Up
 
 ```bash
 # Uninstall the chart
 helm uninstall my-app
 
-# (Optional) Remove the ingress controller
-helm uninstall nginx-controller -n nginx-controller  # or: helm uninstall traefik-controller -n traefik-controller
+# (Optional) Remove the ingress/gateway controller
+helm uninstall nginx-controller -n nginx-controller
+# or: helm uninstall traefik-controller -n traefik-controller
+# or: helm uninstall envoy-gateway -n envoy-gateway-system
+
+# (Optional) Remove Gateway API CRDs
+kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 
 # Delete the kind cluster
 kind delete cluster --name helm-demo

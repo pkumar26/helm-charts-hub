@@ -32,7 +32,7 @@ helm install traefik-controller ./charts/traefik-controller
 
 ```bash
 # Install Gateway API CRDs first
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.1/standard-install.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 
 # Install Traefik with Gateway API
 helm install traefik-controller ./charts/traefik-controller \
@@ -135,6 +135,22 @@ kubectl describe clusterrolebinding <release-name>-traefik-controller
 ### Gateway API resources not rendered
 
 Ensure both `gatewayApi.enabled: true` and `providers.kubernetesGateway.enabled: true` are set. Gateway API CRDs must be installed on the cluster before installing the chart.
+
+### Gateway API CRD conflicts on apply
+
+If you see errors like:
+
+```
+Apply failed with 3 conflicts: conflicts with "helm" using apiextensions.k8s.io/v1
+```
+
+This happens when the CRDs were previously managed by another field manager (e.g., Helm or a prior `kubectl apply`). Fix with:
+
+```bash
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+```
+
+`--force-conflicts` tells the server-side apply to take ownership of the conflicting fields.
 
 ### IngressClass not created
 
