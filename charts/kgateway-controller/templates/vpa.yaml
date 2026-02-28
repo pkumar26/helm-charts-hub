@@ -1,0 +1,30 @@
+{{/*
+VerticalPodAutoscaler — provides resource right-sizing recommendations/automation.
+Gated by verticalPodAutoscaler.enabled.
+*/}}
+{{- if .Values.verticalPodAutoscaler.enabled }}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common-lib.fullname" . }}
+  updatePolicy:
+    updateMode: {{ .Values.verticalPodAutoscaler.updateMode | default "Off" | quote }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: kgateway
+        minAllowed:
+          cpu: {{ .Values.verticalPodAutoscaler.minAllowed.cpu }}
+          memory: {{ .Values.verticalPodAutoscaler.minAllowed.memory }}
+        maxAllowed:
+          cpu: {{ .Values.verticalPodAutoscaler.maxAllowed.cpu | quote }}
+          memory: {{ .Values.verticalPodAutoscaler.maxAllowed.memory }}
+{{- end }}

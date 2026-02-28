@@ -1,0 +1,23 @@
+{{/*
+PodDisruptionBudget — ensures minimum availability during voluntary disruptions.
+Gated by podDisruptionBudget.enabled.
+*/}}
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "kgateway-controller.selectorLabels" . | nindent 6 }}
+{{- end }}

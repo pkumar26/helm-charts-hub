@@ -1,0 +1,14 @@
+# Development environment overlay — kgateway-controller
+replicaCount: 1
+
+controller:
+  logLevel: debug
+  enableEnvoy: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

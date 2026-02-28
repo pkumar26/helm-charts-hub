@@ -1,0 +1,29 @@
+{{/*
+Service for the kgateway controller.
+Exposes xDS gRPC port (9977), health port (9093), and metrics port (9092).
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" (merge (default (dict) .Values.service.annotations) (default (dict) .Values.annotations))) | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "kgateway-controller.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: grpc-xds
+      port: {{ .Values.service.ports.grpcXds }}
+      targetPort: grpc-xds
+      protocol: TCP
+    - name: health
+      port: {{ .Values.service.ports.health }}
+      targetPort: health
+      protocol: TCP
+    - name: metrics
+      port: {{ .Values.service.ports.metrics }}
+      targetPort: metrics
+      protocol: TCP

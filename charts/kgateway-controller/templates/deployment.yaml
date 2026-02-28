@@ -1,0 +1,131 @@
+{{/*
+Deployment for the kgateway controller.
+Runs the kgateway server with environment variable configuration.
+No ConfigMap — all config is injected via env vars.
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "kgateway-controller.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kgateway-controller.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.metrics.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: {{ .Values.service.ports.metrics | quote }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kgateway-controller.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: kgateway
+          image: {{ include "kgateway-controller.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: KGW_LOG_LEVEL
+              value: {{ .Values.controller.logLevel | quote }}
+            - name: KGW_XDS_SERVICE_NAME
+              value: {{ include "common-lib.fullname" . }}
+            - name: KGW_XDS_SERVICE_PORT
+              value: {{ .Values.service.ports.grpcXds | quote }}
+            - name: KGW_DEFAULT_IMAGE_REGISTRY
+              value: {{ .Values.controller.proxy.image.registry | quote }}
+            - name: KGW_DEFAULT_IMAGE_TAG
+              value: {{ include "kgateway-controller.proxyImageTag" . | quote }}
+            - name: KGW_DEFAULT_IMAGE_PULL_POLICY
+              value: {{ .Values.controller.proxy.image.pullPolicy | quote }}
+            - name: KGW_ENABLE_ENVOY
+              value: {{ .Values.controller.enableEnvoy | quote }}
+            - name: KGW_VALIDATION_MODE
+              value: {{ .Values.controller.validationMode | quote }}
+            {{- if .Values.controller.discoveryNamespaceSelectors }}
+            - name: KGW_DISCOVERY_NAMESPACE_SELECTORS
+              value: {{ .Values.controller.discoveryNamespaceSelectors | toJson | quote }}
+            {{- end }}
+            {{- if .Values.controller.policyMerge }}
+            - name: KGW_POLICY_MERGE
+              value: {{ .Values.controller.policyMerge | toJson | quote }}
+            {{- end }}
+            {{- if .Values.controller.goMemLimit }}
+            - name: GOMEMLIMIT
+              value: {{ .Values.controller.goMemLimit | quote }}
+            {{- end }}
+            {{- if .Values.controller.goMaxProcs }}
+            - name: GOMAXPROCS
+              value: {{ .Values.controller.goMaxProcs | quote }}
+            {{- end }}
+          ports:
+            - name: grpc-xds
+              containerPort: 9977
+              protocol: TCP
+            - name: health
+              containerPort: 9093
+              protocol: TCP
+            - name: metrics
+              containerPort: 9092
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            initialDelaySeconds: 1
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            failureThreshold: 120
+            periodSeconds: 1
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

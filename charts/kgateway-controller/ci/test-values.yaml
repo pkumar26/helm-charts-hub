@@ -1,0 +1,12 @@
+# CI test values — minimal configuration for kgateway-controller
+# Used by chart-testing (ct lint) for basic validation
+replicaCount: 1
+
+image:
+  registry: cr.kgateway.dev/kgateway-dev
+  repository: kgateway
+  pullPolicy: IfNotPresent
+
+controller:
+  logLevel: info
+  enableEnvoy: true

@@ -1,0 +1,225 @@
+{{/*
+ClusterRole for kgateway controller — grants permissions for Gateway API resources,
+kgateway CRDs, core resources, apps/deployments (data plane), autoscaling, discovery,
+CRD management, authentication, and leader election.
+*/}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common-lib.fullname" . }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+rules:
+  # Gateway API resources
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses
+      - gateways
+      - httproutes
+      - grpcroutes
+      - tcproutes
+      - tlsroutes
+      - referencegrants
+      - backendtlspolicies
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - patch
+  # Gateway API status updates
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses/status
+      - gateways/status
+      - httproutes/status
+      - grpcroutes/status
+      - tcproutes/status
+      - tlsroutes/status
+      - backendtlspolicies/status
+    verbs:
+      - get
+      - update
+      - patch
+  # Experimental Gateway API
+  - apiGroups:
+      - gateway.networking.x-k8s.io
+    resources:
+      - xlistenersets
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+  - apiGroups:
+      - gateway.networking.x-k8s.io
+    resources:
+      - xlistenersets/status
+    verbs:
+      - get
+      - update
+      - patch
+  # kgateway CRDs
+  - apiGroups:
+      - gateway.kgateway.dev
+    resources:
+      - trafficpolicies
+      - listenerpolicies
+      - httplistenerpolicies
+      - backends
+      - directresponses
+      - gatewayextensions
+      - gatewayparameters
+      - backendconfigpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  # Agent gateway CRDs (kgateway agent mode)
+  - apiGroups:
+      - agentgateway.dev
+    resources:
+      - agentgatewaybackends
+      - agentgatewaypolicies
+      - agentgatewayparameters
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - agentgateway.dev
+    resources:
+      - agentgatewaybackends/status
+      - agentgatewaypolicies/status
+      - agentgatewayparameters/status
+    verbs:
+      - get
+      - update
+      - patch
+  # kgateway CRD status updates
+  - apiGroups:
+      - gateway.kgateway.dev
+    resources:
+      - trafficpolicies/status
+      - listenerpolicies/status
+      - httplistenerpolicies/status
+      - backends/status
+      - directresponses/status
+      - gatewayextensions/status
+      - gatewayparameters/status
+      - backendconfigpolicies/status
+    verbs:
+      - get
+      - update
+      - patch
+  # Core resources
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+      - namespaces
+      - nodes
+      - pods
+      - configmaps
+      - events
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  # Deployments (data-plane proxy management)
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  # Autoscaling (proxy HPA management)
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  # VPA (proxy VPA management)
+  - apiGroups:
+      - autoscaling.k8s.io
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  # PDB (proxy PDB management)
+  - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  # Discovery
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  # CRD management
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+      - watch
+  # Authentication (for gateway API admission)
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  # Leader election
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - get
+      - update

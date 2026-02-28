@@ -1,0 +1,16 @@
+{{/*
+GatewayClass — registers kgateway as a Gateway API implementation.
+Only rendered when gatewayApi.createGatewayClass is true.
+*/}}
+{{- if .Values.gatewayApi.createGatewayClass }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: {{ .Values.gatewayApi.gatewayClassName | default "kgateway" }}
+  labels:
+    {{- include "common-lib.labels" (dict "root" . "extraLabels" .Values.labels) | nindent 4 }}
+  annotations:
+    {{- include "common-lib.annotations" (dict "root" . "extraAnnotations" .Values.annotations) | nindent 4 }}
+spec:
+  controllerName: kgateway.dev/kgateway
+{{- end }}
