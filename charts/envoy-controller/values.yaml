@@ -90,7 +90,7 @@ gateway:
   # -- Create a default Gateway resource
   enabled: false
   # -- Gateway name
-  name: envoy-controller
+  name: envoy-gateway
   # -- Gateway namespace (defaults to release namespace)
   namespace: ""
   # -- Gateway listeners
@@ -162,6 +162,11 @@ labels: {}
 
 # -- Extra resource annotations
 annotations: {}
+
+# -- Certificate generation Job (pre-install hook)
+certgen:
+  # -- Enable certgen Job to generate self-signed TLS certs for xDS server
+  enabled: true
 
 # -- Extra environment variables
 extraEnv: []

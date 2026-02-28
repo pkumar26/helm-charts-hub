@@ -148,6 +148,17 @@ helm uninstall envoy-controller
 | `labels` | Extra resource labels | `{}` |
 | `annotations` | Extra resource annotations | `{}` |
 
+### Certificate Generation
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `certgen.enabled` | Run pre-install Job to generate xDS TLS certs | `true` |
+
+The certgen Job runs as a Helm pre-install/pre-upgrade hook. It generates self-signed TLS
+certificates that the controller uses for secure xDS communication with the data plane (Envoy Proxy pods).
+If you manage certificates externally (e.g., cert-manager), set `certgen.enabled: false` and ensure a
+Secret named `envoy-gateway` exists with `tls.crt`, `tls.key`, and `ca.crt` keys.
+
 ## Chart Dependencies
 
 | Repository | Name | Version |
@@ -207,4 +218,21 @@ Check the controller logs:
 
 ```bash
 kubectl logs -n <namespace> -l app.kubernetes.io/name=envoy-controller
+```
+
+### Data plane pods stuck in ContainerCreating
+
+If Envoy Proxy pods show `secret "envoy" not found`, the controller TLS certificates are missing.
+Verify the certgen Job completed:
+
+```bash
+kubectl get jobs -n <namespace> -l app.kubernetes.io/component=certgen
+kubectl get secret envoy-gateway -n <namespace>
+```
+
+If the secret is missing, delete the release and reinstall (the certgen hook runs on install):
+
+```bash
+helm uninstall <release-name> -n <namespace>
+helm install <release-name> charts/envoy-controller -n <namespace>
 ```

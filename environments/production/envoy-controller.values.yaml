@@ -14,7 +14,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 75
 gateway:
   enabled: true
-  name: envoy-controller
+  name: envoy-gateway
   listeners:
     - name: http
       port: 80

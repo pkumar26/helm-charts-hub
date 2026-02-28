@@ -102,6 +102,9 @@ spec:
             - name: config
               mountPath: /config
               readOnly: true
+            - name: certs
+              mountPath: /certs
+              readOnly: true
             {{- with .Values.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -109,6 +112,10 @@ spec:
         - name: config
           configMap:
             name: {{ include "common-lib.fullname" . }}-config
+        - name: certs
+          secret:
+            secretName: envoy-gateway
+            optional: true
         {{- with .Values.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

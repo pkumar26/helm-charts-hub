@@ -83,7 +83,7 @@ Renders a `GatewayClass` with:
 ### 2.8 gateway.yaml
 
 Renders a `Gateway` with:
-- Name: `.Values.gateway.name` (default: `envoy-controller`)
+- Name: `.Values.gateway.name` (default: `envoy-gateway`)
 - GatewayClassName: references GatewayClass name
 - Listeners: configurable list with name, port, protocol, hostname
 - AllowedRoutes: namespaces from All
