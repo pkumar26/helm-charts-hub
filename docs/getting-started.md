@@ -171,8 +171,8 @@ helm install traefik-controller charts/traefik-controller \
 ### Option B: Envoy Gateway
 
 ```bash
-helm dependency build charts/envoy-gateway
-helm install envoy-gateway charts/envoy-gateway \
+helm dependency build charts/envoy-controller
+helm install envoy-controller charts/envoy-controller \
   --namespace envoy-gateway-system --create-namespace \
   --set gateway.enabled=true
 ```
@@ -209,7 +209,7 @@ helm uninstall my-app
 # (Optional) Remove the ingress/gateway controller
 helm uninstall nginx-controller -n nginx-controller
 # or: helm uninstall traefik-controller -n traefik-controller
-# or: helm uninstall envoy-gateway -n envoy-gateway-system
+# or: helm uninstall envoy-controller -n envoy-gateway-system
 
 # (Optional) Remove Gateway API CRDs
 kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml

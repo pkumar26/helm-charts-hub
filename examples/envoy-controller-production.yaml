@@ -1,6 +1,6 @@
 # Envoy Gateway — production example
 # Full-featured production deployment with HPA and pod anti-affinity.
-# Requires Gateway API CRDs v1.2+ pre-installed.
+# Requires Gateway API CRDs v1.5+ pre-installed.
 #
 # Usage:
 #   helm install envoy-controller charts/envoy-controller -f examples/envoy-controller-production.yaml

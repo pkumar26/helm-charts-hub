@@ -34,6 +34,10 @@ helm dependency build charts/envoy-controller
 helm install envoy-controller charts/envoy-controller -f environments/dev/envoy-controller.values.yaml
 ```
 
+> **Tip**: Use `envoy-controller` as the release name to keep resource names clean.
+> If the release name differs from the chart name (e.g., `helm install envoy-gateway charts/envoy-controller`),
+> Kubernetes resources will have a compound name like `envoy-gateway-envoy-controller`.
+
 ## Uninstalling the Chart
 
 ```bash
@@ -180,6 +184,25 @@ Secret named `envoy-gateway` exists with `tls.crt`, `tls.key`, and `ca.crt` keys
 - [Getting Started](../../docs/getting-started.md)
 
 ## Troubleshooting
+
+### Data plane pod / service naming
+
+When a Gateway is created, the Envoy Gateway controller automatically provisions data plane Envoy Proxy
+pods, Deployments, and Services. These resources are named by the controller using the pattern:
+
+```
+envoy-<namespace>-<gateway-name>-<hash>
+```
+
+For example, a Gateway named `envoy-gateway` in the `default` namespace produces:
+
+```
+envoy-default-envoy-gateway-12b6bb46   (Deployment, Service, Pod prefix)
+```
+
+This naming is **internal to the Envoy Gateway controller binary** and is not configurable via this
+Helm chart. The `envoy-` prefix and `<namespace>-` segment are hardcoded in the controller's
+infrastructure provisioning logic.
 
 ### Gateway API CRD conflicts on apply
 

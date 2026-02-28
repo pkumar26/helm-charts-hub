@@ -82,7 +82,7 @@ metadata:
   name: my-app-route
 spec:
   parentRefs:
-    - name: envoy-controller
+    - name: envoy-gateway
       namespace: envoy-gateway-system
   hostnames:
     - "app.example.com"
