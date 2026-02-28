@@ -15,7 +15,7 @@ Add a `kgateway-controller` Helm chart (see [spec.md](spec.md) for full requirem
 **Testing**: `helm lint`, `helm template`, chart-testing (`ct`)
 **Target Platform**: Kubernetes 1.31+
 **Project Type**: Helm chart (single chart within mono-repo)
-**Constraints**: Gateway API CRDs v1.5.0 and kgateway-crds chart must be pre-installed
+**Constraints**: Gateway API CRDs v1.5.0 (experimental channel), kgateway-crds chart, and agentgateway-crds chart must be pre-installed
 
 ## Constitution Check
 
@@ -82,4 +82,4 @@ examples/
 
 **Structure Decision**: Follows established controller chart pattern (traefik-controller, nginx-controller). Custom templates for Deployment, Service, and RBAC; common-lib delegation for ServiceAccount, HPA, labels, annotations, and naming.
 
-> **Constitution §3.2 Note**: Templates "MUST primarily delegate to `common-lib` helpers." The Deployment, Service, ClusterRole, and ClusterRoleBinding use custom templates because the controller has unique needs (env-var config, multi-port, 12-apiGroup RBAC rules). This follows the same precedent set by `traefik-controller` and `nginx-controller`, which also use custom templates per §3.2's "unique needs" clause. Common-lib is used for labels, annotations, naming, ServiceAccount, and HPA.
+> **Constitution §3.2 Note**: Templates "MUST primarily delegate to `common-lib` helpers." The Deployment, Service, ClusterRole, and ClusterRoleBinding use custom templates because the controller has unique needs (env-var config, multi-port, 14-apiGroup RBAC rules). This follows the same precedent set by `traefik-controller` and `nginx-controller`, which also use custom templates per §3.2's "unique needs" clause. Common-lib is used for labels, annotations, naming, ServiceAccount, and HPA.

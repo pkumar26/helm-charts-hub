@@ -8,13 +8,17 @@
 
 1. **Kubernetes 1.31+** cluster running
 2. **Helm 3.12+** installed
-3. **Gateway API CRDs v1.5.0** installed:
+3. **Gateway API CRDs v1.5.0** installed (experimental channel required for TLSRoute v1alpha2):
    ```bash
-   kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+   kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/experimental-install.yaml
    ```
 4. **kgateway CRDs** installed:
    ```bash
-   helm upgrade -i kgateway-crds oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds --version v2.2.1
+   helm upgrade -i kgateway-crds oci://ghcr.io/kgateway-dev/charts/kgateway-crds --version v2.2.1
+   ```
+5. **agentgateway CRDs** installed (required by kgateway v2.2.1):
+   ```bash
+   helm upgrade -i agentgateway-crds oci://ghcr.io/agentgateway/charts/agentgateway-crds --version v1.0.0-alpha.2
    ```
 
 ---
@@ -120,8 +124,9 @@ kubectl delete gatewayclass kgateway
 helm uninstall kgateway-controller
 
 # (Optional) Remove CRDs
+helm uninstall agentgateway-crds
 helm uninstall kgateway-crds
-kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/experimental-install.yaml
 ```
 
 ---

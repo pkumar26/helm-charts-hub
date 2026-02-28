@@ -17,7 +17,7 @@ The kgateway-controller chart produces up to 10 Kubernetes resource types. All r
 | 1 | Deployment | apps/v1 | deployment.yaml | Always | Controller pod with env-var config |
 | 2 | Service | v1 | service.yaml | Always | ClusterIP: xDS, health, metrics |
 | 3 | ServiceAccount | v1 | serviceaccount.yaml | `serviceAccount.create` | Supports annotations for IRSA/workload identity |
-| 4 | ClusterRole | rbac.authorization.k8s.io/v1 | clusterrole.yaml | Always | 12 apiGroups covering Gateway API, kgateway CRDs, core, apps, autoscaling, policy, coordination, discovery, apiextensions, authentication |
+| 4 | ClusterRole | rbac.authorization.k8s.io/v1 | clusterrole.yaml | Always | 14 apiGroups covering Gateway API, kgateway CRDs, agentgateway CRDs, core, apps, autoscaling, policy, coordination, discovery, apiextensions, authentication |
 | 5 | ClusterRoleBinding | rbac.authorization.k8s.io/v1 | clusterrolebinding.yaml | Always | Binds ClusterRole to ServiceAccount |
 | 6 | GatewayClass | gateway.networking.k8s.io/v1 | gateway-class.yaml | `gatewayApi.createGatewayClass` | Controller name: kgateway.dev/kgateway |
 | 7 | HPA | autoscaling/v2 | hpa.yaml | `autoscaling.enabled` | common-lib based |
@@ -139,7 +139,7 @@ rules:
       - tlsroutes
       - referencegrants
       - backendtlspolicies
-    verbs: ["get", "list", "watch", "patch"]
+    verbs: ["get", "list", "watch", "create", "patch"]
   
   # Gateway API status updates
   - apiGroups: ["gateway.networking.k8s.io"]
@@ -187,6 +187,22 @@ rules:
       - gatewayextensions/status
       - gatewayparameters/status
       - backendconfigpolicies/status
+    verbs: ["get", "update", "patch"]
+
+  # agentgateway CRDs (kgateway agent mode)
+  - apiGroups: ["agentgateway.dev"]
+    resources:
+      - agentgatewaybackends
+      - agentgatewaypolicies
+      - agentgatewayparameters
+    verbs: ["get", "list", "watch"]
+
+  # agentgateway CRD status updates
+  - apiGroups: ["agentgateway.dev"]
+    resources:
+      - agentgatewaybackends/status
+      - agentgatewaypolicies/status
+      - agentgatewayparameters/status
     verbs: ["get", "update", "patch"]
 
   # Core resources

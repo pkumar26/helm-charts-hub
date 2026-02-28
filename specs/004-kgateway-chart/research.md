@@ -65,8 +65,9 @@
 - **Decision**: Extensive ClusterRole covering:
   - Core: services, endpoints, secrets, namespaces, nodes, pods, configmaps, events, serviceaccounts
   - Apps: deployments (full CRUD for managing data-plane proxy pods)
-  - Gateway API (gateway.networking.k8s.io): gatewayclasses, gateways, httproutes, grpcroutes, tcproutes, tlsroutes, referencegrants, backendtlspolicies (+ status update)
+  - Gateway API (gateway.networking.k8s.io): gatewayclasses, gateways, httproutes, grpcroutes, tcproutes, tlsroutes, referencegrants, backendtlspolicies (+ status update). Includes `create` verb for gatewayclasses (controller auto-creates GatewayClass at runtime).
   - kgateway custom resources (gateway.kgateway.dev): trafficpolicies, listenerpolicies, httplistenerpolicies, backends, directresponses, gatewayextensions, gatewayparameters, backendconfigpolicies (+ status update)
+  - agentgateway custom resources (agentgateway.dev): agentgatewaybackends, agentgatewaypolicies, agentgatewayparameters (+ status update). Required by kgateway v2.2.1 for agentgateway support.
   - Experimental (gateway.networking.x-k8s.io): xlistenersets
   - Discovery: endpointslices
   - API extensions: customresourcedefinitions (get/list/watch)
@@ -78,16 +79,20 @@
 
 ## 7. CRD Requirements
 
-- **Decision**: Two sets of CRDs required, both pre-installed. NOT bundled in chart.
-  1. **Gateway API CRDs** (v1.5.0):
+- **Decision**: Three sets of CRDs required, all pre-installed. NOT bundled in chart.
+  1. **Gateway API CRDs** (v1.5.0, experimental channel — required for TLSRoute v1alpha2):
      ```bash
-     kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+     kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/experimental-install.yaml
      ```
   2. **kgateway CRDs** (v2.2.1):
      ```bash
-     helm upgrade -i kgateway-crds oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds --version v2.2.1
+     helm upgrade -i kgateway-crds oci://ghcr.io/kgateway-dev/charts/kgateway-crds --version v2.2.1
      ```
-- **Rationale**: Same pattern as traefik-controller. CRDs are cluster-scoped and have independent lifecycle.
+  3. **agentgateway CRDs** (v1.0.0-alpha.2, required by kgateway v2.2.1):
+     ```bash
+     helm upgrade -i agentgateway-crds oci://ghcr.io/agentgateway/charts/agentgateway-crds --version v1.0.0-alpha.2
+     ```
+- **Rationale**: Same pattern as traefik-controller. CRDs are cluster-scoped and have independent lifecycle. The agentgateway CRDs are required because kgateway v2.2.1 watches agentgateway.dev resources at startup; this dependency is removed in v2.3.0.
 
 ## 8. No Gateway Template
 

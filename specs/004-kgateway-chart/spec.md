@@ -41,7 +41,8 @@ The chart follows the same `common-lib` integration pattern established by `trae
 
 - Envoy proxy data-plane deployment — kgateway controller provisions data-plane Envoy instances automatically when users create Gateway resources
 - kgateway CRDs (TrafficPolicy, ListenerPolicy, etc.) — installed via separate `kgateway-crds` Helm chart
-- Gateway API CRDs — must be pre-installed on the cluster
+- agentgateway CRDs (backends, policies, etc.) — installed via separate `agentgateway-crds` Helm chart (required by kgateway v2.2.1)
+- Gateway API CRDs — must be pre-installed on the cluster (experimental channel required for TLSRoute v1alpha2)
 - Istio waypoint integration — optional feature, deferred
 - TLS for xDS communication — deferred to follow-on
 - Rate limiting, authentication, or other extension filters
@@ -55,7 +56,7 @@ The chart follows the same `common-lib` integration pattern established by `trae
 | GatewayClass only rendered when `gatewayApi.createGatewayClass: true` | Feature-flagged |
 | All resources carry 6 base labels + 2 base annotations | Uses common-lib helpers |
 | GatewayClass references correct controller name | `kgateway.dev/kgateway` |
-| RBAC grants minimum required permissions | Gateway API, core, apps, autoscaling, coordination, discovery, apiextensions, authentication |
+| RBAC grants minimum required permissions | Gateway API, kgateway CRDs, agentgateway CRDs, core, apps, autoscaling, coordination, discovery, apiextensions, authentication |
 | Service type ClusterIP by default | Controller is internal control plane |
 | HPA only rendered when `autoscaling.enabled: true` | Feature-flagged |
 | PDB only rendered when `podDisruptionBudget.enabled: true` | Feature-flagged |
@@ -73,7 +74,7 @@ Deploy the kgateway controller as a Kubernetes Deployment with configurable repl
 Optionally create a GatewayClass resource that registers kgateway as a Gateway API implementation with controller name `kgateway.dev/kgateway`. Gated behind `gatewayApi.createGatewayClass`. Note: the kgateway controller also auto-creates a GatewayClass at runtime.
 
 ### FR-3: RBAC
-Create ClusterRole and ClusterRoleBinding with permissions for Gateway API resources (gatewayclasses, gateways, httproutes, grpcroutes, tcproutes, tlsroutes, referencegrants, backendtlspolicies), kgateway custom resources (gateway.kgateway.dev group), core resources (services, endpoints, secrets, namespaces, nodes, pods, configmaps, events, serviceaccounts), apps (deployments), autoscaling (HPAs, VPAs), policy (PDBs), coordination (leases), discovery (endpointslices), apiextensions (CRDs), and authentication (tokenreviews).
+Create ClusterRole and ClusterRoleBinding with permissions for Gateway API resources (gatewayclasses with create verb, gateways, httproutes, grpcroutes, tcproutes, tlsroutes, referencegrants, backendtlspolicies), kgateway custom resources (gateway.kgateway.dev group), agentgateway custom resources (agentgateway.dev group — required by v2.2.1), core resources (services, endpoints, secrets, namespaces, nodes, pods, configmaps, events, serviceaccounts), apps (deployments), autoscaling (HPAs, VPAs), policy (PDBs), coordination (leases), discovery (endpointslices), apiextensions (CRDs), and authentication (tokenreviews).
 
 ### FR-4: Service
 Expose the controller via a ClusterIP Service with three ports: grpc-xds (9977), health (9093), and metrics (9092).
@@ -104,14 +105,15 @@ Optionally create a VPA with configurable updateMode, gated behind `verticalPodA
 | §3.2 Templates MUST primarily delegate to common-lib | Deployment and Service use custom templates | Follows established controller-chart precedent (traefik-controller, nginx-controller). Custom templates are required for controller-specific needs (env-var config, multi-port, RBAC). Common-lib is used for labels, annotations, naming, ServiceAccount, and HPA. |
 - kgateway v2.2.1 is the target version (latest stable)
 - Requires Kubernetes 1.31+ for Gateway API v1.5 support
-- Requires Gateway API CRDs v1.5.0 and kgateway-crds chart pre-installed
+- Requires Gateway API CRDs v1.5.0 and kgateway-crds chart and agentgateway-crds chart pre-installed
 - Image registry: `cr.kgateway.dev/kgateway-dev`
 - Image tag must be prefixed with `v` (e.g., `v2.2.1`)
 
 ## 7. Dependencies
 
 - `common-lib` library chart (>=0.1.0 <1.0.0)
-- Gateway API CRDs (v1.5.0) must be installed separately
+- Gateway API CRDs (v1.5.0, experimental channel) must be installed separately
 - kgateway CRDs chart (`kgateway-crds`) must be installed separately
+- agentgateway CRDs chart (`agentgateway-crds`) must be installed separately (required by kgateway v2.2.1)
 - Kubernetes 1.31+
 - Helm ≥ 3.12
