@@ -22,6 +22,10 @@ spec:
       {{- if .hostname }}
       hostname: {{ .hostname | quote }}
       {{- end }}
+      {{- if .tls }}
+      tls:
+        {{- toYaml .tls | nindent 8 }}
+      {{- end }}
       allowedRoutes:
         namespaces:
           from: All

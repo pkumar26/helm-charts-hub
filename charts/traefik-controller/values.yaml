@@ -121,12 +121,16 @@ gatewayApi:
     # -- Gateway namespace (defaults to release namespace)
     namespace: ""
     listeners:
-      - name: http
-        port: 80
+      - name: web
+        port: 8080
         protocol: HTTP
-      - name: https
-        port: 443
-        protocol: HTTPS
+      # Uncomment and add TLS config for HTTPS:
+      # - name: websecure
+      #   port: 8443
+      #   protocol: HTTPS
+      #   tls:
+      #     certificateRefs:
+      #       - name: my-tls-secret
 
 # -- ServiceAccount configuration
 serviceAccount:
