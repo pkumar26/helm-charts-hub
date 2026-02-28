@@ -40,6 +40,59 @@ helm install kgateway-controller helm-charts-hub/kgateway-controller \
 
 > **Note**: The controller auto-creates a GatewayClass at runtime. To create a Helm-managed GatewayClass instead (for auditability), set `gatewayApi.createGatewayClass=true`.
 
+## Next Steps
+
+After the controller pod is running, create a Gateway, deploy a sample app, and route traffic:
+
+```bash
+# 1. Create a Gateway (triggers kgateway to provision Envoy proxy pods)
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: kgateway
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 8080
+EOF
+
+# 2. Deploy a sample application
+kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+kubectl expose deployment httpbin --port=80
+
+# 3. Create an HTTPRoute to send traffic to the app
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin-route
+spec:
+  parentRefs:
+    - name: my-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: httpbin
+          port: 80
+EOF
+
+# 4. Verify the Gateway is accepted and proxy pods are running
+kubectl get gateway my-gateway
+kubectl get pods -l gateway.networking.k8s.io/gateway-name=my-gateway
+
+# 5. Test the route (port-forward the gateway service)
+kubectl port-forward svc/my-gateway-http-8080 8080:8080 &
+curl -s http://localhost:8080/get | head -20
+```
+
+The kgateway controller watches for `Gateway` resources and automatically provisions Envoy proxy pods as the data plane. When you create an `HTTPRoute`, traffic flows through the provisioned proxy to your backend service.
+
 ## Configuration
 
 | Key | Type | Default | Description |
