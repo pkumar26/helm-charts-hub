@@ -87,7 +87,7 @@ kubectl get gateway my-gateway
 kubectl get pods -l gateway.networking.k8s.io/gateway-name=my-gateway
 
 # 5. Test the route (port-forward the gateway service)
-kubectl port-forward svc/my-gateway-http-8080 8080:8080 &
+kubectl port-forward svc/my-gateway 8080:8080 &
 curl -s http://localhost:8080/get | head -20
 ```
 
