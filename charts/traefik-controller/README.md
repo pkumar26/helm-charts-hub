@@ -35,6 +35,11 @@ helm install traefik-controller ./charts/traefik-controller
 kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 
 # Install Traefik with Gateway API
+helm install traefik-controller helm-charts-hub/traefik-controller \
+  --set gatewayApi.enabled=true \
+  --set providers.kubernetesGateway.enabled=true
+
+# Or install from local source
 helm install traefik-controller ./charts/traefik-controller \
   --set gatewayApi.enabled=true \
   --set providers.kubernetesGateway.enabled=true
