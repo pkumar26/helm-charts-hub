@@ -16,35 +16,23 @@ This chart deploys [kgateway](https://kgateway.dev/) as a Kubernetes Gateway API
 ## Installation
 
 ```bash
+# Install Gateway API CRDs (required)
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+
 # From the Helm repository
 helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
 helm install kgateway helm-charts-hub/kgateway-controller -n kgateway-system --create-namespace
 
 # Or install from local source
 helm install kgateway ./charts/kgateway-controller -n kgateway-system --create-namespace
-```
-
-### With GatewayClass enabled
-
-```bash
-# Install Gateway API CRDs first
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
-
-# Install kgateway with GatewayClass
-helm install kgateway helm-charts-hub/kgateway-controller \
-  -n kgateway-system --create-namespace \
-  --set gatewayApi.createGatewayClass=true
-
-# Or install from local source
-helm install kgateway ./charts/kgateway-controller \
-  -n kgateway-system --create-namespace \
-  --set gatewayApi.createGatewayClass=true
 
 # Or use a values file
 helm install kgateway helm-charts-hub/kgateway-controller \
   -n kgateway-system --create-namespace \
   -f values-production.yaml
 ```
+
+> **Note**: The controller auto-creates a GatewayClass at runtime. To create a Helm-managed GatewayClass instead (for auditability), set `gatewayApi.createGatewayClass=true`.
 
 ## Configuration
 
