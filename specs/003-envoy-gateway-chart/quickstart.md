@@ -19,13 +19,13 @@
 ### Build Dependencies
 
 ```bash
-helm dependency build charts/envoy-gateway
+helm dependency build charts/envoy-controller
 ```
 
 ### 1. Basic Install (GatewayClass only)
 
 ```bash
-helm install envoy-gateway charts/envoy-gateway \
+helm install envoy-controller charts/envoy-controller \
   --namespace envoy-gateway-system \
   --create-namespace
 ```
@@ -41,7 +41,7 @@ This deploys:
 ### 2. Install with Default Gateway
 
 ```bash
-helm install envoy-gateway charts/envoy-gateway \
+helm install envoy-controller charts/envoy-controller \
   --namespace envoy-gateway-system \
   --create-namespace \
   --set gateway.enabled=true
@@ -52,10 +52,10 @@ This additionally creates a `Gateway` resource with HTTP (80) and HTTPS (443) li
 ### 3. Install with Environment Overlay
 
 ```bash
-helm install envoy-gateway charts/envoy-gateway \
+helm install envoy-controller charts/envoy-controller \
   --namespace envoy-gateway-system \
   --create-namespace \
-  -f environments/production/envoy-gateway.values.yaml
+  -f environments/production/envoy-controller.values.yaml
 ```
 
 ## Verify Installation
@@ -82,7 +82,7 @@ metadata:
   name: my-app-route
 spec:
   parentRefs:
-    - name: envoy-gateway
+    - name: envoy-controller
       namespace: envoy-gateway-system
   hostnames:
     - "app.example.com"
@@ -101,16 +101,16 @@ spec:
 For local development with debug logging:
 
 ```bash
-helm install envoy-gateway charts/envoy-gateway \
+helm install envoy-controller charts/envoy-controller \
   --namespace envoy-gateway-system \
   --create-namespace \
-  -f environments/dev/envoy-gateway.values.yaml
+  -f environments/dev/envoy-controller.values.yaml
 ```
 
 ## Uninstall
 
 ```bash
-helm uninstall envoy-gateway -n envoy-gateway-system
+helm uninstall envoy-controller -n envoy-gateway-system
 kubectl delete namespace envoy-gateway-system
 ```
 

@@ -9,7 +9,7 @@
 
 ```yaml
 apiVersion: v2
-name: envoy-gateway
+name: envoy-controller
 description: Envoy Gateway controller chart for helm-charts-hub — Gateway API-native controller using Envoy Proxy as data plane
 type: application
 version: 0.1.0
@@ -83,7 +83,7 @@ Renders a `GatewayClass` with:
 ### 2.8 gateway.yaml
 
 Renders a `Gateway` with:
-- Name: `.Values.gateway.name` (default: `envoy-gateway`)
+- Name: `.Values.gateway.name` (default: `envoy-controller`)
 - GatewayClassName: references GatewayClass name
 - Listeners: configurable list with name, port, protocol, hostname
 - AllowedRoutes: namespaces from All
@@ -102,8 +102,8 @@ Renders a `HorizontalPodAutoscaler` with:
 ### 2.10 _helpers.tpl
 
 Local chart helpers:
-- `envoy-gateway.name` — chart name with nameOverride support
-- `envoy-gateway.fullname` — full resource name with fullnameOverride support
+- `envoy-controller.name` — chart name with nameOverride support
+- `envoy-controller.fullname` — full resource name with fullnameOverride support
 
 ### 2.11 NOTES.txt
 
@@ -155,7 +155,7 @@ gatewayClass:
   name: envoy
 gateway:
   enabled: true
-  name: envoy-gateway
+  name: envoy-controller
   listeners:
     - name: http
       port: 80
@@ -187,7 +187,7 @@ resources:
     memory: 128Mi
 gateway:
   enabled: true
-  name: envoy-gateway
+  name: envoy-controller
   listeners:
     - name: http
       port: 80
@@ -211,7 +211,7 @@ resources:
     memory: 512Mi
 gateway:
   enabled: true
-  name: envoy-gateway
+  name: envoy-controller
   listeners:
     - name: http
       port: 80
@@ -239,7 +239,7 @@ autoscaling:
   targetCPUUtilizationPercentage: 75
 gateway:
   enabled: true
-  name: envoy-gateway
+  name: envoy-controller
   listeners:
     - name: http
       port: 80
@@ -257,6 +257,6 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - envoy-gateway
+                  - envoy-controller
           topologyKey: kubernetes.io/hostname
 ```

@@ -81,7 +81,7 @@
 
 | Field | Source | Notes |
 |-------|--------|-------|
-| name | `.Values.gateway.name` | Default: `envoy-gateway` |
+| name | `.Values.gateway.name` | Default: `envoy-controller` |
 | namespace | `.Values.gateway.namespace` or release namespace | Configurable |
 | gatewayClassName | `.Values.gatewayClass.name` | References GatewayClass |
 | listeners | `.Values.gateway.listeners` | HTTP (80), HTTPS (443) |
@@ -182,7 +182,7 @@ rules:
 | `gatewayClass.name` | string | `envoy` | GatewayClass name |
 | `gatewayClass.controllerName` | string | `gateway.envoyproxy.io/gatewayclass-controller` | Controller name |
 | `gateway.enabled` | bool | `false` | Create default Gateway |
-| `gateway.name` | string | `envoy-gateway` | Gateway name |
+| `gateway.name` | string | `envoy-controller` | Gateway name |
 | `gateway.namespace` | string | `""` | Gateway namespace |
 | `gateway.listeners` | list | [{http:80}, {https:443}] | Gateway listeners |
 | `config.gateway.controllerName` | string | `gateway.envoyproxy.io/gatewayclass-controller` | Controller name in config (hardcoded default) |

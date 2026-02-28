@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-Add an **envoy-gateway** controller chart to the helm-charts-hub catalog. Envoy Gateway is an implementation of the Kubernetes Gateway API that manages Envoy Proxy as a data plane. Unlike Traefik or NGINX Ingress controllers that use proprietary controller binaries, Envoy Gateway is purpose-built for the Gateway API specification and uses Envoy Proxy as its underlying data plane.
+Add an **envoy-controller** controller chart to the helm-charts-hub catalog. Envoy Gateway is an implementation of the Kubernetes Gateway API that manages Envoy Proxy as a data plane. Unlike Traefik or NGINX Ingress controllers that use proprietary controller binaries, Envoy Gateway is purpose-built for the Gateway API specification and uses Envoy Proxy as its underlying data plane.
 
 The chart deploys:
 - **Envoy Gateway controller** — the control plane that watches Gateway API resources and configures Envoy Proxy instances

@@ -19,9 +19,9 @@
 
 **Purpose**: Create chart directory structure and initialize Helm chart metadata
 
-- [X] T001 Create chart directory structure at charts/envoy-gateway/templates/ and charts/envoy-gateway/ci/
-- [X] T002 Create Chart.yaml with common-lib dependency in charts/envoy-gateway/Chart.yaml
-- [X] T003 Run `helm dependency build` for charts/envoy-gateway to fetch common-lib
+- [X] T001 Create chart directory structure at charts/envoy-controller/templates/ and charts/envoy-controller/ci/
+- [X] T002 Create Chart.yaml with common-lib dependency in charts/envoy-controller/Chart.yaml
+- [X] T003 Run `helm dependency build` for charts/envoy-controller to fetch common-lib
 
 ---
 
@@ -31,8 +31,8 @@
 
 **⚠️ CRITICAL**: No template work can begin until this phase is complete
 
-- [X] T004 Create values.yaml with full schema and sensible defaults in charts/envoy-gateway/values.yaml
-- [X] T005 Create local chart helpers (_helpers.tpl) with name/fullname overrides in charts/envoy-gateway/templates/_helpers.tpl
+- [X] T004 Create values.yaml with full schema and sensible defaults in charts/envoy-controller/values.yaml
+- [X] T005 Create local chart helpers (_helpers.tpl) with name/fullname overrides in charts/envoy-controller/templates/_helpers.tpl
 
 **Checkpoint**: Chart scaffolding ready — template implementation can now begin
 
@@ -46,11 +46,11 @@
 
 ### Implementation for User Story 1
 
-- [X] T006 [P] [US1] Create ConfigMap template with EnvoyGateway configuration in charts/envoy-gateway/templates/configmap.yaml
-- [X] T007 [P] [US1] Create ServiceAccount template using common-lib helper in charts/envoy-gateway/templates/serviceaccount.yaml
-- [X] T008 [US1] Create Deployment template with multi-port, xDS args, health probes, ConfigMap volume mount in charts/envoy-gateway/templates/deployment.yaml
-- [X] T009 [US1] Create Service template with ClusterIP, gRPC port 18000, conditional metrics port in charts/envoy-gateway/templates/service.yaml
-- [X] T009b [US1] Create HPA template gated on autoscaling.enabled using common-lib.hpa pattern in charts/envoy-gateway/templates/hpa.yaml
+- [X] T006 [P] [US1] Create ConfigMap template with EnvoyGateway configuration in charts/envoy-controller/templates/configmap.yaml
+- [X] T007 [P] [US1] Create ServiceAccount template using common-lib helper in charts/envoy-controller/templates/serviceaccount.yaml
+- [X] T008 [US1] Create Deployment template with multi-port, xDS args, health probes, ConfigMap volume mount in charts/envoy-controller/templates/deployment.yaml
+- [X] T009 [US1] Create Service template with ClusterIP, gRPC port 18000, conditional metrics port in charts/envoy-controller/templates/service.yaml
+- [X] T009b [US1] Create HPA template gated on autoscaling.enabled using common-lib.hpa pattern in charts/envoy-controller/templates/hpa.yaml
 
 **Checkpoint**: Controller Deployment + Service + HPA render correctly via `helm template`. Core MVP is functional.
 
@@ -64,8 +64,8 @@
 
 ### Implementation for User Story 2
 
-- [X] T010 [P] [US2] Create ClusterRole template with Gateway API, core, apps, autoscaling, and coordination permissions in charts/envoy-gateway/templates/clusterrole.yaml
-- [X] T011 [P] [US2] Create ClusterRoleBinding template binding ClusterRole to ServiceAccount in charts/envoy-gateway/templates/clusterrolebinding.yaml
+- [X] T010 [P] [US2] Create ClusterRole template with Gateway API, core, apps, autoscaling, and coordination permissions in charts/envoy-controller/templates/clusterrole.yaml
+- [X] T011 [P] [US2] Create ClusterRoleBinding template binding ClusterRole to ServiceAccount in charts/envoy-controller/templates/clusterrolebinding.yaml
 
 **Checkpoint**: RBAC resources render and are properly gated behind `rbac.create`.
 
@@ -79,8 +79,8 @@
 
 ### Implementation for User Story 3
 
-- [X] T012 [P] [US3] Create GatewayClass template gated on gatewayClass.create in charts/envoy-gateway/templates/gateway-class.yaml
-- [X] T013 [P] [US3] Create Gateway template with configurable listeners gated on gateway.enabled in charts/envoy-gateway/templates/gateway.yaml
+- [X] T012 [P] [US3] Create GatewayClass template gated on gatewayClass.create in charts/envoy-controller/templates/gateway-class.yaml
+- [X] T013 [P] [US3] Create Gateway template with configurable listeners gated on gateway.enabled in charts/envoy-controller/templates/gateway.yaml
 
 **Checkpoint**: Gateway API resources render correctly with proper feature flags.
 
@@ -94,15 +94,15 @@
 
 ### Implementation for User Story 4
 
-- [X] T014 [P] [US4] Create NOTES.txt with post-install instructions in charts/envoy-gateway/templates/NOTES.txt
-- [X] T015 [P] [US4] Create CI test-values.yaml (basic mode, no Gateway) in charts/envoy-gateway/ci/test-values.yaml
-- [X] T016 [P] [US4] Create CI test-gateway-values.yaml (Gateway enabled) in charts/envoy-gateway/ci/test-gateway-values.yaml
-- [X] T017 [P] [US4] Create README.md with all required sections per constitution §9.2 in charts/envoy-gateway/README.md
-- [X] T018 [P] [US4] Create dev environment overlay in environments/dev/envoy-gateway.values.yaml
-- [X] T019 [P] [US4] Create staging environment overlay in environments/staging/envoy-gateway.values.yaml
-- [X] T020 [P] [US4] Create production environment overlay in environments/production/envoy-gateway.values.yaml
-- [X] T021 [P] [US4] Create production example values in examples/envoy-gateway-production.yaml
-- [X] T021b [P] [US4] Create CHANGELOG.md with initial 0.1.0 entry in charts/envoy-gateway/CHANGELOG.md
+- [X] T014 [P] [US4] Create NOTES.txt with post-install instructions in charts/envoy-controller/templates/NOTES.txt
+- [X] T015 [P] [US4] Create CI test-values.yaml (basic mode, no Gateway) in charts/envoy-controller/ci/test-values.yaml
+- [X] T016 [P] [US4] Create CI test-gateway-values.yaml (Gateway enabled) in charts/envoy-controller/ci/test-gateway-values.yaml
+- [X] T017 [P] [US4] Create README.md with all required sections per constitution §9.2 in charts/envoy-controller/README.md
+- [X] T018 [P] [US4] Create dev environment overlay in environments/dev/envoy-controller.values.yaml
+- [X] T019 [P] [US4] Create staging environment overlay in environments/staging/envoy-controller.values.yaml
+- [X] T020 [P] [US4] Create production environment overlay in environments/production/envoy-controller.values.yaml
+- [X] T021 [P] [US4] Create production example values in examples/envoy-controller-production.yaml
+- [X] T021b [P] [US4] Create CHANGELOG.md with initial 0.1.0 entry in charts/envoy-controller/CHANGELOG.md
 
 **Checkpoint**: All documentation, CI values, and environment overlays are complete.
 
@@ -112,13 +112,13 @@
 
 **Purpose**: Validation, integration with the broader repository, and final quality checks
 
-- [X] T022 Update root CHARTS.md with envoy-gateway chart entry
+- [X] T022 Update root CHARTS.md with envoy-controller chart entry
 - [X] T023 Run `helm dependency build` for charts/envoy-gateway
-- [X] T024 Run `helm lint charts/envoy-gateway` — zero errors
-- [X] T025 Run `helm lint charts/envoy-gateway -f charts/envoy-gateway/ci/test-values.yaml` — zero errors
-- [X] T026 Run `helm lint charts/envoy-gateway -f charts/envoy-gateway/ci/test-gateway-values.yaml` — zero errors
-- [X] T027 Run `helm template charts/envoy-gateway` — validate all resources render
-- [X] T028 Run `helm template charts/envoy-gateway -f charts/envoy-gateway/ci/test-gateway-values.yaml` — validate Gateway resources render
+- [X] T024 Run `helm lint charts/envoy-controller` — zero errors
+- [X] T025 Run `helm lint charts/envoy-controller -f charts/envoy-controller/ci/test-values.yaml` — zero errors
+- [X] T026 Run `helm lint charts/envoy-controller -f charts/envoy-controller/ci/test-gateway-values.yaml` — zero errors
+- [X] T027 Run `helm template charts/envoy-controller` — validate all resources render
+- [X] T028 Run `helm template charts/envoy-controller -f charts/envoy-controller/ci/test-gateway-values.yaml` — validate Gateway resources render
 - [X] T029 Validate all resources carry 6 base labels + 2 base annotations from common-lib
 - [X] T030 Run quickstart.md validation — verify documented commands work
 
@@ -169,26 +169,26 @@ Phase 2 complete
 # Launch all user stories in parallel:
 
 # US1 — ConfigMap + ServiceAccount first (parallel):
-Task: "Create ConfigMap template in charts/envoy-gateway/templates/configmap.yaml"
-Task: "Create ServiceAccount template in charts/envoy-gateway/templates/serviceaccount.yaml"
+Task: "Create ConfigMap template in charts/envoy-controller/templates/configmap.yaml"
+Task: "Create ServiceAccount template in charts/envoy-controller/templates/serviceaccount.yaml"
 
 # US2 — Both RBAC templates (parallel):
-Task: "Create ClusterRole template in charts/envoy-gateway/templates/clusterrole.yaml"
-Task: "Create ClusterRoleBinding template in charts/envoy-gateway/templates/clusterrolebinding.yaml"
+Task: "Create ClusterRole template in charts/envoy-controller/templates/clusterrole.yaml"
+Task: "Create ClusterRoleBinding template in charts/envoy-controller/templates/clusterrolebinding.yaml"
 
 # US3 — Both Gateway API templates (parallel):
-Task: "Create GatewayClass template in charts/envoy-gateway/templates/gateway-class.yaml"
-Task: "Create Gateway template in charts/envoy-gateway/templates/gateway.yaml"
+Task: "Create GatewayClass template in charts/envoy-controller/templates/gateway-class.yaml"
+Task: "Create Gateway template in charts/envoy-controller/templates/gateway.yaml"
 
 # US4 — All documentation (parallel):
-Task: "Create NOTES.txt in charts/envoy-gateway/templates/NOTES.txt"
-Task: "Create CI test-values.yaml in charts/envoy-gateway/ci/test-values.yaml"
-Task: "Create CI test-gateway-values.yaml in charts/envoy-gateway/ci/test-gateway-values.yaml"
-Task: "Create README.md in charts/envoy-gateway/README.md"
-Task: "Create dev overlay in environments/dev/envoy-gateway.values.yaml"
-Task: "Create staging overlay in environments/staging/envoy-gateway.values.yaml"
-Task: "Create production overlay in environments/production/envoy-gateway.values.yaml"
-Task: "Create production example in examples/envoy-gateway-production.yaml"
+Task: "Create NOTES.txt in charts/envoy-controller/templates/NOTES.txt"
+Task: "Create CI test-values.yaml in charts/envoy-controller/ci/test-values.yaml"
+Task: "Create CI test-gateway-values.yaml in charts/envoy-controller/ci/test-gateway-values.yaml"
+Task: "Create README.md in charts/envoy-controller/README.md"
+Task: "Create dev overlay in environments/dev/envoy-controller.values.yaml"
+Task: "Create staging overlay in environments/staging/envoy-controller.values.yaml"
+Task: "Create production overlay in environments/production/envoy-controller.values.yaml"
+Task: "Create production example in examples/envoy-controller-production.yaml"
 ```
 
 ---
