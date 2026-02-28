@@ -60,6 +60,24 @@ rules:
   # Gateway API resources
   {{- if .Values.gatewayApi.enabled }}
   - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+  - apiGroups:
       - gateway.networking.k8s.io
     resources:
       - gatewayclasses
@@ -83,6 +101,8 @@ rules:
       - tcproutes/status
       - tlsroutes/status
     verbs:
+      - get
       - update
+      - patch
   {{- end }}
 {{- end }}
