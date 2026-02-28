@@ -16,6 +16,12 @@
 
 ## Installation
 
+### Build Dependencies
+
+```bash
+helm dependency build charts/envoy-gateway
+```
+
 ### 1. Basic Install (GatewayClass only)
 
 ```bash

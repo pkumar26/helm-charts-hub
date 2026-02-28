@@ -10,7 +10,7 @@ Envoy Gateway controller chart for helm-charts-hub — Gateway API-native contro
 
 - Kubernetes 1.28+
 - Helm 3.x
-- Gateway API CRDs v1.2+ installed in the cluster
+- Gateway API CRDs v1.5+ installed in the cluster
 
 Install Gateway API CRDs:
 
@@ -23,12 +23,14 @@ kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-s
 ## Installing the Chart
 
 ```bash
+helm dependency build charts/envoy-gateway
 helm install envoy-gateway charts/envoy-gateway
 ```
 
 With custom values:
 
 ```bash
+helm dependency build charts/envoy-gateway
 helm install envoy-gateway charts/envoy-gateway -f environments/dev/envoy-gateway.values.yaml
 ```
 
