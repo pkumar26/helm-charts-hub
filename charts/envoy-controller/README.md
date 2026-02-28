@@ -20,18 +20,36 @@ kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-s
 
 > **Note**: `--force-conflicts` is required if CRDs were previously installed by another field manager (e.g., Helm or a prior `kubectl apply`).
 
-## Installing the Chart
+## Installation
 
 ```bash
+# From the Helm repository
+helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
+helm install envoy-controller helm-charts-hub/envoy-controller
+
+# Or install from local source
 helm dependency build charts/envoy-controller
-helm install envoy-controller charts/envoy-controller
+helm install envoy-controller ./charts/envoy-controller
 ```
 
-With custom values:
+### With Gateway enabled
 
 ```bash
+# Install Gateway API CRDs first (if not already installed)
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+
+# Install with a default Gateway
+helm install envoy-controller helm-charts-hub/envoy-controller \
+  --set gateway.enabled=true
+
+# Or install from local source
 helm dependency build charts/envoy-controller
-helm install envoy-controller charts/envoy-controller -f environments/dev/envoy-controller.values.yaml
+helm install envoy-controller ./charts/envoy-controller \
+  --set gateway.enabled=true
+
+# Or use a values file
+helm install envoy-controller helm-charts-hub/envoy-controller \
+  -f environments/production/envoy-controller.values.yaml
 ```
 
 > **Tip**: Use `envoy-controller` as the release name to keep resource names clean.
