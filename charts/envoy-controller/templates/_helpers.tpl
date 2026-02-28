@@ -1,14 +1,14 @@
 {{/*
 Chart name. Overridable via nameOverride value.
 */}}
-{{- define "envoy-gateway.name" -}}
+{{- define "envoy-controller.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Fully qualified app name. Overridable via fullnameOverride value.
 */}}
-{{- define "envoy-gateway.fullname" -}}
+{{- define "envoy-controller.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}

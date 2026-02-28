@@ -17,7 +17,7 @@ A Gateway "{{ .Values.gateway.name }}" has been created in namespace {{ .Values.
 The controller is running in namespace {{ .Release.Namespace }}.
 
 To verify the installation:
-  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "envoy-gateway.name" . }}
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "envoy-controller.name" . }}
 
 To create an HTTPRoute, apply a manifest like:
 

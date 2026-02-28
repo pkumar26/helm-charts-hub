@@ -1,5 +1,5 @@
 apiVersion: v2
-name: envoy-gateway
+name: envoy-controller
 description: Envoy Gateway controller chart for helm-charts-hub — Gateway API-native controller using Envoy Proxy as data plane
 type: application
 version: 0.1.0

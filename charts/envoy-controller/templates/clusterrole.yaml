@@ -53,6 +53,7 @@ rules:
       - get
       - list
       - delete
+      - deletecollection
       - patch
   # Discovery
   - apiGroups:
@@ -63,16 +64,18 @@ rules:
       - get
       - list
       - watch
-  # Apps — for data plane deployment management
+  # Apps — for data plane deployment and daemonset management
   - apiGroups:
       - apps
     resources:
       - deployments
+      - daemonsets
     verbs:
       - create
       - get
       - list
       - delete
+      - deletecollection
       - patch
       - watch
   # Autoscaling — for data plane HPA

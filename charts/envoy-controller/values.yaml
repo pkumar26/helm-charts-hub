@@ -90,7 +90,7 @@ gateway:
   # -- Create a default Gateway resource
   enabled: false
   # -- Gateway name
-  name: envoy-gateway
+  name: envoy-controller
   # -- Gateway namespace (defaults to release namespace)
   namespace: ""
   # -- Gateway listeners

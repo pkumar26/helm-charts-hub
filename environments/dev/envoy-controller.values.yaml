@@ -9,7 +9,7 @@ resources:
     memory: 128Mi
 gateway:
   enabled: true
-  name: envoy-gateway
+  name: envoy-controller
   listeners:
     - name: http
       port: 80

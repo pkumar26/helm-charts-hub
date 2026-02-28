@@ -1,4 +1,4 @@
-# envoy-gateway
+# envoy-controller
 
 ![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
@@ -23,21 +23,21 @@ kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-s
 ## Installing the Chart
 
 ```bash
-helm dependency build charts/envoy-gateway
-helm install envoy-gateway charts/envoy-gateway
+helm dependency build charts/envoy-controller
+helm install envoy-controller charts/envoy-controller
 ```
 
 With custom values:
 
 ```bash
-helm dependency build charts/envoy-gateway
-helm install envoy-gateway charts/envoy-gateway -f environments/dev/envoy-gateway.values.yaml
+helm dependency build charts/envoy-controller
+helm install envoy-controller charts/envoy-controller -f environments/dev/envoy-controller.values.yaml
 ```
 
 ## Uninstalling the Chart
 
 ```bash
-helm uninstall envoy-gateway
+helm uninstall envoy-controller
 ```
 
 ## Configuration
@@ -158,9 +158,9 @@ helm uninstall envoy-gateway
 
 | Environment | File |
 |-------------|------|
-| Development | `environments/dev/envoy-gateway.values.yaml` |
-| Staging | `environments/staging/envoy-gateway.values.yaml` |
-| Production | `environments/production/envoy-gateway.values.yaml` |
+| Development | `environments/dev/envoy-controller.values.yaml` |
+| Staging | `environments/staging/envoy-controller.values.yaml` |
+| Production | `environments/production/envoy-controller.values.yaml` |
 
 ## Further Reading
 
@@ -191,8 +191,8 @@ kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-s
 Check that RBAC resources were created:
 
 ```bash
-kubectl describe clusterrole <release-name>-envoy-gateway
-kubectl describe clusterrolebinding <release-name>-envoy-gateway
+kubectl describe clusterrole <release-name>-envoy-controller
+kubectl describe clusterrolebinding <release-name>-envoy-controller
 ```
 
 Verify Gateway API CRDs are installed:
@@ -206,5 +206,5 @@ kubectl get crd gatewayclasses.gateway.networking.k8s.io
 Check the controller logs:
 
 ```bash
-kubectl logs -n <namespace> -l app.kubernetes.io/name=envoy-gateway
+kubectl logs -n <namespace> -l app.kubernetes.io/name=envoy-controller
 ```

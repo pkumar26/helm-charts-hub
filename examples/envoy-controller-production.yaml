@@ -3,7 +3,7 @@
 # Requires Gateway API CRDs v1.2+ pre-installed.
 #
 # Usage:
-#   helm install envoy-gateway charts/envoy-gateway -f examples/envoy-gateway-production.yaml
+#   helm install envoy-controller charts/envoy-controller -f examples/envoy-controller-production.yaml
 
 replicaCount: 2
 
@@ -29,7 +29,7 @@ gatewayClass:
 
 gateway:
   enabled: true
-  name: envoy-gateway
+  name: envoy-controller
   listeners:
     - name: http
       port: 80
@@ -65,7 +65,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - envoy-gateway
+                  - envoy-controller
           topologyKey: kubernetes.io/hostname
 
 config:
