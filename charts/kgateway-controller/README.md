@@ -21,14 +21,13 @@ kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-s
 
 # From the Helm repository
 helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
-helm install kgateway helm-charts-hub/kgateway-controller -n kgateway-system --create-namespace
+helm install kgateway helm-charts-hub/kgateway-controller
 
 # Or install from local source
-helm install kgateway ./charts/kgateway-controller -n kgateway-system --create-namespace
+helm install kgateway ./charts/kgateway-controller
 
 # Or use a values file
 helm install kgateway helm-charts-hub/kgateway-controller \
-  -n kgateway-system --create-namespace \
   -f values-production.yaml
 ```
 
@@ -173,5 +172,5 @@ helm upgrade kgateway charts/kgateway-controller --set gatewayApi.createGatewayC
 Ensure `metrics.enabled` is `true` (default). Verify Prometheus annotations are on the pod:
 
 ```bash
-kubectl get pods -n kgateway-system -l app.kubernetes.io/name=kgateway-controller -o jsonpath='{.items[0].metadata.annotations}'
+kubectl get pods -l app.kubernetes.io/name=kgateway-controller -o jsonpath='{.items[0].metadata.annotations}'
 ```

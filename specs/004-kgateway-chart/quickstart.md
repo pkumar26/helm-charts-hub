@@ -22,22 +22,20 @@
 ## Install (Minimal)
 
 ```bash
-helm install kgateway-controller ./charts/kgateway-controller \
-  --namespace kgateway-system \
-  --create-namespace
+helm install kgateway-controller ./charts/kgateway-controller
 ```
 
 ### Verify
 
 ```bash
 # Check controller pod is running
-kubectl get pods -n kgateway-system -l app.kubernetes.io/name=kgateway-controller
+kubectl get pods -l app.kubernetes.io/name=kgateway-controller
 
 # Check service is available
-kubectl get svc -n kgateway-system -l app.kubernetes.io/name=kgateway-controller
+kubectl get svc -l app.kubernetes.io/name=kgateway-controller
 
 # Check controller logs
-kubectl logs -n kgateway-system -l app.kubernetes.io/name=kgateway-controller --tail=50
+kubectl logs -l app.kubernetes.io/name=kgateway-controller --tail=50
 ```
 
 ---
@@ -46,8 +44,6 @@ kubectl logs -n kgateway-system -l app.kubernetes.io/name=kgateway-controller --
 
 ```bash
 helm install kgateway-controller ./charts/kgateway-controller \
-  --namespace kgateway-system \
-  --create-namespace \
   -f environments/production/kgateway-controller.values.yaml
 ```
 
@@ -121,7 +117,7 @@ kubectl delete gateway my-gateway
 kubectl delete gatewayclass kgateway
 
 # Uninstall chart
-helm uninstall kgateway-controller -n kgateway-system
+helm uninstall kgateway-controller
 
 # (Optional) Remove CRDs
 helm uninstall kgateway-crds
@@ -140,10 +136,9 @@ helm lint ./charts/kgateway-controller
 helm lint ./charts/kgateway-controller -f ./charts/kgateway-controller/ci/test-full-values.yaml
 
 # Template render (dry-run)
-helm template kgateway-controller ./charts/kgateway-controller --namespace kgateway-system
+helm template kgateway-controller ./charts/kgateway-controller
 
 # Template with all features enabled
 helm template kgateway-controller ./charts/kgateway-controller \
-  --namespace kgateway-system \
   -f ./charts/kgateway-controller/ci/test-full-values.yaml
 ```
