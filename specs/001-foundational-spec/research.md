@@ -71,7 +71,7 @@
 - **Single unified ingress/gateway helper**: The APIs are too different (different API groups, different resource shapes) to unify cleanly.
 
 **Key findings**:
-- Gateway API v1.4.1 is current. GA resources: GatewayClass, Gateway, HTTPRoute, GRPCRoute, ReferenceGrant, BackendTLSPolicy.
+- Gateway API v1.5.0 is current. GA resources: GatewayClass, Gateway, HTTPRoute, GRPCRoute, ReferenceGrant, BackendTLSPolicy.
 - CRDs installed via: `kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml`.
 - **Traefik**: Native `kubernetesGateway` provider. Conformant for v1.4.0. Enable via `providers.kubernetesGateway.enabled: true`.
 - **NGINX**: Two separate projects. `ingress-nginx` = Ingress only (no Gateway plans). `nginx-gateway-fabric` = purpose-built Gateway API implementation (conformant v1.4.1). They are separate deployments.

@@ -25,9 +25,9 @@ Kubernetes is moving toward the Gateway API as the long-term standard for traffi
 
 This repository:
 
-- Supports Ingress today for broad compatibility (via Traefik and NGINX controllers).
+- Supports Ingress for broad compatibility (via Traefik and NGINX controllers).
 
-- Is designed so controllers (starting with Traefik) can also be configured via Gateway API resources in future versions.
+- Supports Gateway API with the Traefik controller chart (opt-in via `gatewayApi.enabled: true`).
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ This repository:
 | [kubectl](https://kubernetes.io/docs/tasks/tools/)            | ≥ 1.26  | Matching cluster version               |
 | [Kubernetes cluster](https://kubernetes.io/docs/setup/) | ≥ 1.26  | kind, minikube, or any managed cluster |
 
-> **Note**: Ingress features require an Ingress controller (Traefik or NGINX). Gateway API support will be introduced gradually, starting with Traefik controller.
+> **Note**: Ingress features require an Ingress controller (Traefik or NGINX). Gateway API is supported by the Traefik controller chart (install [Gateway API CRDs](https://gateway-api.sigs.k8s.io/) first).
 
 ## Quick Start
 
@@ -87,8 +87,8 @@ See [CHARTS.md](CHARTS.md) for the complete list of available charts with descri
 |-------|-------------|------|
 | [common-lib](charts/common-lib/) | Shared library chart — reusable helpers | Library |
 | [web-app](charts/web-app/) | General-purpose application chart | Application |
-| [traefik-controller](charts/traefik-controller/) | Traefik-based edge controller (Ingress today, Gateway-ready roadmap) | Controller  |
-| [nginx-controller](charts/nginx-controller/) | NGINX-based edge controller (Ingress-first, Gateway roadmap)         | Controller  |
+| [traefik-controller](charts/traefik-controller/) | Traefik-based edge controller (Ingress + Gateway API) | Controller  |
+| [nginx-controller](charts/nginx-controller/) | NGINX-based edge controller (Ingress)                 | Controller  |
 
 ## Troubleshooting
 

@@ -49,12 +49,16 @@ helm install traefik-controller ./charts/traefik-controller \
 | `image.pullPolicy` | string | `IfNotPresent` | Image pull policy |
 | `replicaCount` | int | `1` | Number of replicas |
 | `service.type` | string | `LoadBalancer` | Service type |
-| `service.ports.web` | int | `80` | HTTP entrypoint port |
-| `service.ports.websecure` | int | `443` | HTTPS entrypoint port |
+| `service.ports.web` | int | `80` | HTTP service port (external) |
+| `service.ports.websecure` | int | `443` | HTTPS service port (external) |
+| `service.containerPorts.web` | int | `8080` | HTTP container/entrypoint port (must match Gateway listener port) |
+| `service.containerPorts.websecure` | int | `8443` | HTTPS container/entrypoint port (must match Gateway listener port) |
 | `service.annotations` | object | `{}` | Extra service annotations |
 | `service.internal` | bool | `false` | Use an internal (private) load balancer. Auto-sets AWS, GCP, and Azure annotations |
 | `service.loadBalancerIP` | string | `""` | Static IP address for the LoadBalancer |
 | `service.loadBalancerSourceRanges` | list | `[]` | Restrict source ranges allowed to access the LoadBalancer |
+| `podSecurityContext` | object | `{runAsNonRoot:true,...}` | Pod-level security context |
+| `securityContext` | object | `{readOnlyRootFilesystem:true,...}` | Container-level security context |
 | `providers.kubernetesIngress.enabled` | bool | `true` | Enable Kubernetes Ingress provider |
 | `providers.kubernetesGateway.enabled` | bool | `false` | Enable Kubernetes Gateway API provider |
 | `ingressController.enabled` | bool | `true` | Create IngressClass resource |
@@ -62,7 +66,7 @@ helm install traefik-controller ./charts/traefik-controller \
 | `gatewayApi.enabled` | bool | `false` | Enable Gateway API resources (GatewayClass, Gateway) |
 | `gatewayApi.gatewayClass.name` | string | `traefik` | GatewayClass name |
 | `gatewayApi.gateway.name` | string | `traefik-gateway` | Gateway name |
-| `gatewayApi.gateway.listeners` | list | `[{http:80},{https:443}]` | Gateway listeners |
+| `gatewayApi.gateway.listeners` | list | `[{web:8080,HTTP}]` | Gateway listeners (ports must match `service.containerPorts`) |
 | `dashboard.enabled` | bool | `false` | Enable Traefik dashboard |
 | `metrics.prometheus.enabled` | bool | `false` | Enable Prometheus metrics |
 | `metrics.prometheus.port` | int | `9100` | Metrics entrypoint port |
@@ -97,12 +101,16 @@ gatewayApi:
   enabled: true
   gateway:
     listeners:
-      - name: http
-        port: 80
+      - name: web
+        port: 8080           # Must match service.containerPorts.web
         protocol: HTTP
-      - name: https
-        port: 443
-        protocol: HTTPS
+      # Uncomment for HTTPS (requires TLS secret):
+      # - name: websecure
+      #   port: 8443         # Must match service.containerPorts.websecure
+      #   protocol: HTTPS
+      #   tls:
+      #     certificateRefs:
+      #       - name: my-tls-secret
 providers:
   kubernetesGateway:
     enabled: true
@@ -114,6 +122,8 @@ metrics:
   prometheus:
     enabled: true
 ```
+
+> **Note**: Gateway listener ports must match the container entrypoint ports (`service.containerPorts`), not the Service ports. The Service maps external 80/443 to internal 8080/8443.
 
 ## Upgrade Notes
 
