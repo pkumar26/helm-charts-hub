@@ -43,6 +43,10 @@ helm install traefik-controller helm-charts-hub/traefik-controller \
 helm install traefik-controller ./charts/traefik-controller \
   --set gatewayApi.enabled=true \
   --set providers.kubernetesGateway.enabled=true
+
+# Or use a values file
+helm install traefik-controller helm-charts-hub/traefik-controller \
+  -f values-production.yaml
 ```
 
 ## Configuration
