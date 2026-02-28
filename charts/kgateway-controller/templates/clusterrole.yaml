@@ -28,6 +28,7 @@ rules:
       - get
       - list
       - watch
+      - create
       - patch
   # Gateway API status updates
   - apiGroups:
@@ -78,6 +79,26 @@ rules:
       - get
       - list
       - watch
+  # Agent gateway CRDs (kgateway agent mode)
+  - apiGroups:
+      - agentgateway.dev
+    resources:
+      - agentgatewaybackends
+      - agentgatewaypolicies
+      - agentgatewayparameters
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - agentgateway.dev
+    resources:
+      - agentgatewaybackends/status
+      - agentgatewaypolicies/status
+      - agentgatewayparameters/status
+    verbs:
+      - get
+      - update
       - patch
   # kgateway CRD status updates
   - apiGroups:

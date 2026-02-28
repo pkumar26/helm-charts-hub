@@ -21,13 +21,13 @@ kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-s
 
 # From the Helm repository
 helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
-helm install kgateway helm-charts-hub/kgateway-controller
+helm install kgateway-controller helm-charts-hub/kgateway-controller
 
 # Or install from local source
-helm install kgateway ./charts/kgateway-controller
+helm install kgateway-controller ./charts/kgateway-controller
 
 # Or use a values file
-helm install kgateway helm-charts-hub/kgateway-controller \
+helm install kgateway-controller helm-charts-hub/kgateway-controller \
   -f values-production.yaml
 ```
 
