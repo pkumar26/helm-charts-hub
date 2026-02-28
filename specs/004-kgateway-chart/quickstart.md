@@ -8,9 +8,9 @@
 
 1. **Kubernetes 1.31+** cluster running
 2. **Helm 3.12+** installed
-3. **Gateway API CRDs v1.4.0** installed:
+3. **Gateway API CRDs v1.5.0** installed:
    ```bash
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+   kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
    ```
 4. **kgateway CRDs** installed:
    ```bash
@@ -125,7 +125,7 @@ helm uninstall kgateway-controller -n kgateway-system
 
 # (Optional) Remove CRDs
 helm uninstall kgateway-crds
-kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 ```
 
 ---

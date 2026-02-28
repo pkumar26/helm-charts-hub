@@ -10,14 +10,14 @@ This chart deploys [kgateway](https://kgateway.dev/) as a Kubernetes Gateway API
 
 - Kubernetes ≥ 1.31
 - Helm ≥ 3.12
-- Gateway API CRDs v1.4.0+ installed on the cluster
+- Gateway API CRDs v1.5.0+ installed on the cluster
 - kgateway CRDs chart (`kgateway-crds`) installed
 
 ## Installation
 
 ```bash
 # Install Gateway API CRDs (required)
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 
 # From the Helm repository
 helm repo add helm-charts-hub https://pkumar26.github.io/helm-charts-hub/
@@ -157,7 +157,7 @@ kubectl describe clusterrolebinding <release-name>-kgateway-controller
 Ensure Gateway API CRDs are installed on the cluster before installing the chart:
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
 ```
 
 ### GatewayClass not created

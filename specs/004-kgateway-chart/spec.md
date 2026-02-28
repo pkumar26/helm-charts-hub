@@ -103,15 +103,15 @@ Optionally create a VPA with configurable updateMode, gated behind `verticalPodA
 | §2.5 "liveness/readiness probes" MUST | No liveness probe — uses readiness + startup probes only | Matches upstream kgateway chart. Startup probe (failureThreshold 120, period 1s) provides equivalent health gating during initialization. Liveness probe is intentionally omitted upstream to avoid unnecessary restarts of a leader-elected controller. |
 | §3.2 Templates MUST primarily delegate to common-lib | Deployment and Service use custom templates | Follows established controller-chart precedent (traefik-controller, nginx-controller). Custom templates are required for controller-specific needs (env-var config, multi-port, RBAC). Common-lib is used for labels, annotations, naming, ServiceAccount, and HPA. |
 - kgateway v2.2.1 is the target version (latest stable)
-- Requires Kubernetes 1.31+ for Gateway API v1.4 support
-- Requires Gateway API CRDs v1.4.0 and kgateway-crds chart pre-installed
+- Requires Kubernetes 1.31+ for Gateway API v1.5 support
+- Requires Gateway API CRDs v1.5.0 and kgateway-crds chart pre-installed
 - Image registry: `cr.kgateway.dev/kgateway-dev`
 - Image tag must be prefixed with `v` (e.g., `v2.2.1`)
 
 ## 7. Dependencies
 
 - `common-lib` library chart (>=0.1.0 <1.0.0)
-- Gateway API CRDs (v1.4.0) must be installed separately
+- Gateway API CRDs (v1.5.0) must be installed separately
 - kgateway CRDs chart (`kgateway-crds`) must be installed separately
 - Kubernetes 1.31+
 - Helm ≥ 3.12

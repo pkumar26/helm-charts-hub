@@ -79,9 +79,9 @@
 ## 7. CRD Requirements
 
 - **Decision**: Two sets of CRDs required, both pre-installed. NOT bundled in chart.
-  1. **Gateway API CRDs** (v1.4.0):
+  1. **Gateway API CRDs** (v1.5.0):
      ```bash
-     kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+     kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
      ```
   2. **kgateway CRDs** (v2.2.1):
      ```bash

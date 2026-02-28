@@ -15,7 +15,7 @@ Add a `kgateway-controller` Helm chart (see [spec.md](spec.md) for full requirem
 **Testing**: `helm lint`, `helm template`, chart-testing (`ct`)
 **Target Platform**: Kubernetes 1.31+
 **Project Type**: Helm chart (single chart within mono-repo)
-**Constraints**: Gateway API CRDs v1.4.0 and kgateway-crds chart must be pre-installed
+**Constraints**: Gateway API CRDs v1.5.0 and kgateway-crds chart must be pre-installed
 
 ## Constitution Check
 
