@@ -1,30 +1,134 @@
-Traefik has been deployed as an edge controller.
+{{/*
+Post-install notes displayed after helm install/upgrade.
+*/}}
+Traefik has been installed successfully!
+
+The controller is running in namespace {{ .Release.Namespace }}.
 
 {{- if .Values.ingressController.enabled }}
 
 Ingress Mode:
   IngressClass: {{ .Values.ingressController.ingressClassName }}
-  Create Ingress resources with:
-    spec:
-      ingressClassName: {{ .Values.ingressController.ingressClassName }}
 {{- end }}
 
 {{- if .Values.gatewayApi.enabled }}
 
 Gateway API Mode:
   GatewayClass: {{ .Values.gatewayApi.gatewayClass.name }}
-  Gateway: {{ .Values.gatewayApi.gateway.name }}
-  Create HTTPRoute resources referencing the gateway:
-    spec:
-      parentRefs:
-        - name: {{ .Values.gatewayApi.gateway.name }}
+  Gateway:      {{ .Values.gatewayApi.gateway.name }}
+{{- end }}
+
+To verify the installation:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "traefik-controller.name" . }}
+
+Endpoints:
+  Service:   {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc
+  HTTP:      {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.ports.web }}
+  HTTPS:     {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.ports.websecure }}
+{{- if .Values.metrics.prometheus.enabled }}
+  Metrics:   {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.metrics.prometheus.port }}
 {{- end }}
 
 Get the Traefik LoadBalancer IP:
   kubectl get svc {{ include "common-lib.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+{{- if .Values.autoscaling.enabled }}
+
+HPA is enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas).
+{{- end }}
 
 {{- if .Values.dashboard.enabled }}
 
 Dashboard:
   Access the Traefik dashboard at http://<TRAEFIK_IP>:9000/dashboard/
 {{- end }}
+
+{{- if .Values.gatewayApi.enabled }}
+
+Next Steps (Gateway API mode) — deploy a sample app and route traffic:
+{{- if not .Values.gatewayApi.gateway.name }}
+
+  # 1. Create a Gateway (if not already created by the chart)
+  kubectl apply -f - <<EOF
+  apiVersion: gateway.networking.k8s.io/v1
+  kind: Gateway
+  metadata:
+    name: traefik-gateway
+    namespace: {{ .Release.Namespace }}
+  spec:
+    gatewayClassName: {{ .Values.gatewayApi.gatewayClass.name }}
+    listeners:
+      - name: web
+        protocol: HTTP
+        port: 8080
+  EOF
+{{- end }}
+
+  # {{ if .Values.gatewayApi.gateway.name }}1{{ else }}2{{ end }}. Deploy a sample application
+  kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+  kubectl expose deployment httpbin --port=80
+
+  # {{ if .Values.gatewayApi.gateway.name }}2{{ else }}3{{ end }}. Create an HTTPRoute to send traffic to the app
+  kubectl apply -f - <<EOF
+  apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    name: httpbin-route
+  spec:
+    parentRefs:
+      - name: {{ .Values.gatewayApi.gateway.name | default "traefik-gateway" }}
+    rules:
+      - matches:
+          - path:
+              type: PathPrefix
+              value: /
+        backendRefs:
+          - name: httpbin
+            port: 80
+  EOF
+
+  # {{ if .Values.gatewayApi.gateway.name }}3{{ else }}4{{ end }}. Verify the Gateway is programmed
+  kubectl get gateway {{ .Values.gatewayApi.gateway.name | default "traefik-gateway" }}
+  kubectl get httproute httpbin-route
+
+  # {{ if .Values.gatewayApi.gateway.name }}4{{ else }}5{{ end }}. Test the route
+  curl -s http://<TRAEFIK_LB_IP>/get | head -20
+
+{{- else }}
+
+Next Steps (Ingress mode) — deploy a sample app and route traffic:
+
+  # 1. Deploy a sample application
+  kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+  kubectl expose deployment httpbin --port=80
+
+  # 2. Create an Ingress resource to route traffic to the app
+  kubectl apply -f - <<EOF
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: httpbin-ingress
+  spec:
+    ingressClassName: {{ .Values.ingressController.ingressClassName }}
+    rules:
+      - http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: httpbin
+                  port:
+                    number: 80
+  EOF
+
+  # 3. Verify the Ingress is created and has an address
+  kubectl get ingress httpbin-ingress
+
+  # 4. Test the route
+  TRAEFIK_IP=$(kubectl get svc {{ include "common-lib.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  curl -s http://$TRAEFIK_IP/get | head -20
+
+{{- end }}
+
+For more information, see: https://doc.traefik.io/traefik/

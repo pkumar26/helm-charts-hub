@@ -1,19 +1,66 @@
-NGINX Ingress Controller has been deployed.
+{{/*
+Post-install notes displayed after helm install/upgrade.
+*/}}
+NGINX Ingress Controller has been installed successfully!
+
+The controller is running in namespace {{ .Release.Namespace }}.
 
 IngressClass: {{ .Values.ingressController.ingressClassName }}
 
-Create Ingress resources with:
-  spec:
-    ingressClassName: {{ .Values.ingressController.ingressClassName }}
+To verify the installation:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ .Chart.Name }},app.kubernetes.io/instance={{ .Release.Name }}
+
+Endpoints:
+  Service:   {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc
+  HTTP:      {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.ports.http }}
+  HTTPS:     {{ include "common-lib.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.ports.https }}
 
 Get the NGINX LoadBalancer IP:
   kubectl get svc {{ include "common-lib.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 
-Verify the controller is running:
-  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ .Chart.Name }},app.kubernetes.io/instance={{ .Release.Name }}
+{{- if .Values.autoscaling.enabled }}
+
+HPA is enabled ({{ .Values.autoscaling.minReplicas }}-{{ .Values.autoscaling.maxReplicas }} replicas).
+{{- end }}
+
+Next Steps — deploy a sample app and route traffic via Ingress:
+
+  # 1. Deploy a sample application
+  kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+  kubectl expose deployment httpbin --port=80
+
+  # 2. Create an Ingress resource to route traffic to the app
+  kubectl apply -f - <<EOF
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: httpbin-ingress
+  spec:
+    ingressClassName: {{ .Values.ingressController.ingressClassName }}
+    rules:
+      - http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: httpbin
+                  port:
+                    number: 80
+  EOF
+
+  # 3. Verify the Ingress is created and has an address
+  kubectl get ingress httpbin-ingress
+
+  # 4. Test the route
+  NGINX_IP=$(kubectl get svc {{ include "common-lib.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  curl -s http://$NGINX_IP/get | head -20
 
 {{- if .Values.gatewayApi.enabled }}
 
-Gateway API: Gateway API support requires nginx-gateway-fabric.
-See https://github.com/nginx/nginx-gateway-fabric for details.
+Gateway API:
+  Gateway API support requires nginx-gateway-fabric.
+  See https://github.com/nginx/nginx-gateway-fabric for details.
 {{- end }}
+
+For more information, see: https://kubernetes.github.io/ingress-nginx/
