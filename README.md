@@ -7,14 +7,16 @@ A Helm chart monorepo providing reusable, production-ready Kubernetes charts wit
 **helm-charts-hub** follows a two-tier architecture:
 
 1. **Library tier** — `common-lib` is a Helm library chart providing reusable helpers for Deployments, Services, Ingress/Gateway resources, HPA, labels, annotations, and security contexts.
-2. **Application tier** — Application and controller charts (e.g., `web-app`, `traefik-controller`, `nginx-controller`) declare `common-lib` as a dependency and delegate standard resource rendering to library helpers.
+2. **Application tier** — Application and controller charts (e.g., `web-app`, `traefik-controller`, `nginx-controller`, `envoy-controller`, `kgateway-controller`) declare `common-lib` as a dependency and delegate standard resource rendering to library helpers.
 
 ```text
 common-lib (library)
     │
     ├── web-app (application)
-    ├── traefik-controller (edge controller)
-    └── nginx-controller (edge controller)
+    ├── traefik-controller (edge controller — Ingress + Gateway API)
+    ├── nginx-controller (edge controller — Ingress)
+    ├── envoy-controller (edge controller — Gateway API-native)
+    └── kgateway-controller (edge controller — Gateway API-native)
 ```
 
 All resources carry standard Kubernetes app labels plus project-specific labels, and two base annotations. Security defaults include runAsNonRoot: true, read-only root filesystem, and no privilege escalation.
@@ -25,9 +27,11 @@ Kubernetes is moving toward the Gateway API as the long-term standard for traffi
 
 This repository:
 
-- Supports Ingress for broad compatibility (via Traefik and NGINX controllers).
+- Supports **Ingress** for broad compatibility (via Traefik and NGINX controllers).
 
-- Supports Gateway API with the Traefik controller chart (opt-in via `gatewayApi.enabled: true`).
+- Supports **Gateway API** natively with the Envoy Gateway (`envoy-controller`) and kgateway (`kgateway-controller`) charts.
+
+- Supports **Gateway API opt-in** with the Traefik controller chart (via `gatewayApi.enabled: true`).
 
 ## Prerequisites
 
@@ -37,7 +41,7 @@ This repository:
 | [kubectl](https://kubernetes.io/docs/tasks/tools/)            | ≥ 1.26  | Matching cluster version               |
 | [Kubernetes cluster](https://kubernetes.io/docs/setup/) | ≥ 1.26  | kind, minikube, or any managed cluster |
 
-> **Note**: Ingress features require an Ingress controller (Traefik or NGINX). Gateway API is supported by the Traefik controller chart (install [Gateway API CRDs](https://gateway-api.sigs.k8s.io/) first).
+> **Note**: Ingress features require an Ingress controller (Traefik or NGINX). Gateway API is supported by Envoy Gateway (`envoy-controller`), kgateway (`kgateway-controller`), and Traefik (`traefik-controller`, opt-in) — install [Gateway API CRDs](https://gateway-api.sigs.k8s.io/) first.
 
 ## Quick Start
 
@@ -89,6 +93,8 @@ See [CHARTS.md](CHARTS.md) for the complete list of available charts with descri
 | [web-app](charts/web-app/) | General-purpose application chart | Application |
 | [traefik-controller](charts/traefik-controller/) | Traefik-based edge controller (Ingress + Gateway API) | Controller  |
 | [nginx-controller](charts/nginx-controller/) | NGINX-based edge controller (Ingress)                 | Controller  |
+| [envoy-controller](charts/envoy-controller/) | Envoy Gateway controller — Gateway API-native (Envoy Proxy data plane) | Controller |
+| [kgateway-controller](charts/kgateway-controller/) | kgateway controller — CNCF Gateway API implementation (Envoy proxy) | Controller |
 
 ## Troubleshooting
 
