@@ -1,5 +1,8 @@
 # common-lib
 
+[![Helm 3](https://img.shields.io/badge/Helm-3-blue?logo=helm&logoColor=white)](https://helm.sh)
+[![Chart Version](https://img.shields.io/badge/chart%20version-0.2.0-blue?logo=helm)](https://github.com/pkumar26/helm-charts-hub/tree/master/charts/common-lib)
+
 Reusable Helm library chart for **helm-charts-hub** — provides standard helpers for Deployments, Services, Ingress, HPA, labels, annotations, and security contexts.
 
 ## Overview

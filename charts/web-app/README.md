@@ -1,5 +1,8 @@
 # web-app
 
+[![Helm 3](https://img.shields.io/badge/Helm-3-blue?logo=helm&logoColor=white)](https://helm.sh)
+[![Chart Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fpkumar26%2Fhelm-charts-hub%2Fmaster%2Fcharts%2Fweb-app%2FChart.yaml&query=%24.version&label=chart%20version&color=blue&logo=helm)](https://github.com/pkumar26/helm-charts-hub/tree/master/charts/web-app)
+
 General-purpose application chart for deploying services on Kubernetes. Supports Deployment and CronJob workload types.
 
 ## Overview
