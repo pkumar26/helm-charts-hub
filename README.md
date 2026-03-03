@@ -1,5 +1,10 @@
 # Helm Charts Hub
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pkumar26/helm-charts-hub/blob/master/LICENSE)
+[![Lint and Test Charts](https://img.shields.io/github/actions/workflow/status/pkumar26/helm-charts-hub/chart-lint-test.yaml)](https://github.com/pkumar26/helm-charts-hub/actions/workflows/chart-lint-test.yaml)
+[![Last Commit](https://img.shields.io/github/last-commit/pkumar26/helm-charts-hub)](https://github.com/pkumar26/helm-charts-hub/commits)
+[![Contributors](https://img.shields.io/github/contributors/pkumar26/helm-charts-hub)](https://github.com/pkumar26/helm-charts-hub/graphs/contributors)
+
 A Helm chart monorepo providing reusable, production-ready Kubernetes charts with consistent patterns, security defaults, and comprehensive documentation.
 
 ## Project Overview

@@ -22,6 +22,7 @@ Before submitting a new chart, verify:
 - [ ] `helm lint` passes with zero errors
 - [ ] `helm template` renders all expected resources
 - [ ] `README.md` contains all 7 required sections (Overview, Prerequisites, Installation, Configuration, Examples, Upgrade Notes, Troubleshooting)
+- [ ] `README.md` includes Helm 3 and chart version badges after the H1 title (see [docs/templates/badge-template.md](docs/templates/badge-template.md) §Helm-Specific Badges)
 - [ ] `CHANGELOG.md` is present with initial version entry
 - [ ] CI test values exist in `ci/test-values.yaml`
 - [ ] `CHARTS.md` is updated with the new chart entry

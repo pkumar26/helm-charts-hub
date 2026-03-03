@@ -4,6 +4,9 @@
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.3.0](https://img.shields.io/badge/AppVersion-1.3.0-informational?style=flat-square)
 
+[![Helm 3](https://img.shields.io/badge/Helm-3-blue?logo=helm&logoColor=white)](https://helm.sh)
+[![Chart Version](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fpkumar26%2Fhelm-charts-hub%2Fmaster%2Fcharts%2Fenvoy-controller%2FChart.yaml&query=%24.version&label=chart%20version&color=blue&logo=helm)](https://github.com/pkumar26/helm-charts-hub/tree/master/charts/envoy-controller)
+
 Envoy Gateway controller chart for helm-charts-hub — Gateway API-native controller using Envoy Proxy as data plane.
 
 ## Prerequisites
