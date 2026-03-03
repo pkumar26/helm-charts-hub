@@ -49,6 +49,96 @@ helm install traefik-controller helm-charts-hub/traefik-controller \
   -f values-production.yaml
 ```
 
+## Next Steps
+
+After the controller pod is running, deploy a sample app and route traffic. Traefik supports two modes — choose the one matching your installation.
+
+### Ingress mode (default)
+
+```bash
+# 1. Deploy a sample application
+kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+kubectl expose deployment httpbin --port=80
+
+# 2. Create an Ingress resource to route traffic to the app
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: httpbin-ingress
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: httpbin
+                port:
+                  number: 80
+EOF
+
+# 3. Verify the Ingress is created and has an address
+kubectl get ingress httpbin-ingress
+
+# 4. Test the route
+TRAEFIK_IP=$(kubectl get svc traefik-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -s http://$TRAEFIK_IP/get | head -20
+```
+
+### Gateway API mode
+
+```bash
+# 1. Create a Gateway (if not already created by the chart)
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: traefik-gateway
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      protocol: HTTP
+      port: 8080
+EOF
+
+# 2. Deploy a sample application
+kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+kubectl expose deployment httpbin --port=80
+
+# 3. Create an HTTPRoute to send traffic to the app
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin-route
+spec:
+  parentRefs:
+    - name: traefik-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: httpbin
+          port: 80
+EOF
+
+# 4. Verify the Gateway is programmed
+kubectl get gateway traefik-gateway
+kubectl get httproute httpbin-route
+
+# 5. Test the route
+TRAEFIK_IP=$(kubectl get svc traefik-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -s http://$TRAEFIK_IP/get | head -20
+```
+
+> **Note**: In Gateway API mode, Gateway listener ports must match the container entrypoint ports (`service.containerPorts`), not the external Service ports. The Service maps external 80/443 to internal 8080/8443.
+
 ## Configuration
 
 | Key | Type | Default | Description |

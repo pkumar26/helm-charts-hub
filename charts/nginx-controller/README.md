@@ -26,6 +26,45 @@ helm install nginx-controller helm-charts-hub/nginx-controller
 helm install nginx-controller ./charts/nginx-controller
 ```
 
+## Next Steps
+
+After the controller pod is running, deploy a sample app and route traffic via Ingress:
+
+```bash
+# 1. Deploy a sample application
+kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+kubectl expose deployment httpbin --port=80
+
+# 2. Create an Ingress resource to route traffic to the app
+kubectl apply -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: httpbin-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: httpbin
+                port:
+                  number: 80
+EOF
+
+# 3. Verify the Ingress is created and has an address
+kubectl get ingress httpbin-ingress
+
+# 4. Test the route
+NGINX_IP=$(kubectl get svc nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -s http://$NGINX_IP/get | head -20
+```
+
+The NGINX Ingress Controller watches for `Ingress` resources with `ingressClassName: nginx` and configures NGINX to route traffic to your backend services.
+
 ## Configuration
 
 | Key | Type | Default | Description |

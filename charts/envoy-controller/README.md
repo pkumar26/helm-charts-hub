@@ -62,6 +62,62 @@ helm install envoy-controller helm-charts-hub/envoy-controller \
 helm uninstall envoy-controller
 ```
 
+## Next Steps
+
+After the controller pod is running, create a Gateway, deploy a sample app, and route traffic:
+
+```bash
+# 1. Create a Gateway (Envoy Gateway will provision Envoy proxy pods)
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: envoy
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+EOF
+
+# 2. Deploy a sample application
+kubectl create deployment httpbin --image=kennethreitz/httpbin --port=80
+kubectl expose deployment httpbin --port=80
+
+# 3. Create an HTTPRoute to send traffic to the app
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin-route
+spec:
+  parentRefs:
+    - name: my-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: httpbin
+          port: 80
+EOF
+
+# 4. Verify the Gateway is accepted and proxy pods are running
+kubectl get gateway my-gateway
+kubectl get pods -l gateway.envoyproxy.io/owning-gateway-name=my-gateway
+
+# 5. Test the route (port-forward the Gateway Service)
+GATEWAY_SVC=$(kubectl get svc -l gateway.envoyproxy.io/owning-gateway-name=my-gateway -o jsonpath='{.items[0].metadata.name}')
+kubectl port-forward svc/$GATEWAY_SVC 8080:80 &
+curl -s http://localhost:8080/get | head -20
+```
+
+The Envoy Gateway controller watches for `Gateway` resources and automatically provisions Envoy Proxy pods as the data plane. When you create an `HTTPRoute`, traffic flows through the provisioned proxy to your backend service.
+
+> **Tip**: If you installed with `--set gateway.enabled=true`, the chart already created a Gateway for you. Skip step 1 and reference the chart-created Gateway name (`envoy-gateway` by default) in steps 3–5.
+
 ## Configuration
 
 ### Image
