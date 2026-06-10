@@ -1,0 +1,137 @@
+# Default values for kiali chart (optional observability)
+# This chart wraps the upstream Kiali server chart
+
+## Enable/disable Kiali deployment
+enabled: false  # Set to true to deploy Kiali (optional component)
+
+## Global configuration
+global:
+  # Istio namespace (where control plane is installed)
+  istioNamespace: istio-system
+
+## Values passed to the upstream kiali-server subchart
+kiali-server:
+  # Deployment configuration
+  deployment:
+    replicas: 1
+    
+    # Image configuration
+    image_name: quay.io/kiali/kiali
+    image_version: v1.86
+    image_pull_policy: IfNotPresent
+    
+    # Resource limits
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+  
+  # Istio configuration
+  external_services:
+    istio:
+      # Use istiod for configuration and certificates
+      config_map_name: istio
+      istiod_deployment_name: istiod
+      istio_sidecar_injector_config_map_name: istio-sidecar-injector
+      
+      # Root namespace where Istio is deployed
+      root_namespace: istio-system
+    
+    # Prometheus integration (required for metrics)
+    prometheus:
+      # Bundled Prometheus (recommended for Istio ambient mode)
+      url: "http://prometheus.istio-system:9090"
+      
+      # Alternative: Azure Managed Prometheus
+      # Note: Azure Monitor doesn't expose Prometheus query API directly
+      # Use bundled Prometheus or Prometheus operator instead
+      
+      # Alternative: kube-prometheus-stack
+      # url: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+    
+    # Grafana integration (optional, for dashboard links)
+    grafana:
+      enabled: true
+      # Use your existing AKS Grafana or custom endpoint
+      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+      # Alternative if using kube-prometheus-stack:
+      # in_cluster_url: "http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80"
+    
+    # Tracing (optional, disable if not using Jaeger/Zipkin)
+    tracing:
+      enabled: false
+  
+  # Authentication strategy
+  auth:
+    strategy: anonymous  # Options: anonymous, token, openid
+    # For token strategy, users need to provide their Kubernetes token
+    # For openid strategy, configure openid settings below
+  
+  # Service configuration
+  service:
+    type: LoadBalancer  # Use LoadBalancer, ClusterIP, or NodePort
+    port: 20001
+    
+    # CRITICAL for Azure AKS: Set to Local to fix Azure LB health probe issues
+    # See docs/azure-lb-externaltrafficpolicy-fix.md for details
+    externalTrafficPolicy: Local
+    
+    # Annotations for cloud-specific LoadBalancer configuration
+    annotations: {}
+      # Azure internal LoadBalancer:
+      # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      # service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "kiali-subnet"
+  
+  # Ingress configuration (optional)
+  ingress:
+    enabled: false
+    # class_name: nginx
+    # hosts:
+    # - kiali.example.com
+  
+  # Server configuration
+  server:
+    web_root: ""
+    web_schema: ""
+    web_fqdn: ""
+  
+  # Kiali configuration
+  kiali_feature_flags:
+    # UI features
+    ui_defaults:
+      metrics_per_refresh: "1m"
+      namespaces: []
+      refresh_interval: "15s"
+    # Enable Istio injection actions
+    istio_injection_action: true
+    istio_upgrade_action: false
+  
+  # Istio label configuration for service discovery
+  istio_labels:
+    app_label_name: "app"
+    version_label_name: "version"
+  
+  # Health configuration for mTLS and error rate checks
+  health_config:
+    rate:
+      - namespace: ".*"
+        kind: ".*"
+        tolerance:
+          - code: "^5\\d\\d$"
+            failure: 10
+            protocol: "http"
+          - code: "^4\\d\\d$"
+            degraded: 10
+            protocol: "http"
+
+## Additional labels
+labels:
+  team: platform
+  managed-by: helm
+  component: observability
+
+## Additional annotations
+annotations: {}

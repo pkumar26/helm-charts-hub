@@ -1,0 +1,46 @@
+# Development environment values for kiali
+# Anonymous auth, minimal resources, enabled for troubleshooting
+
+enabled: true  # Enable in dev for easy troubleshooting
+
+kiali-server:
+  deployment:
+    replicas: 1
+    
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  
+  auth:
+    strategy: anonymous  # No authentication required in dev
+  
+  service:
+    type: NodePort  # Use NodePort for local development
+    node_port: 30020
+  
+  external_services:
+    prometheus:
+      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
+    
+    grafana:
+      enabled: true
+      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+    
+    tracing:
+      enabled: false
+  
+  kiali_feature_flags:
+    ui_defaults:
+      refresh_interval: "15s"
+
+labels:
+  environment: dev
+  team: platform
+  managed-by: helm
+  component: observability
+
+annotations: {}

@@ -1,0 +1,80 @@
+# Production environment values for kiali
+# Token authentication, production resources, OPTIONAL (can be disabled for air-gapped)
+
+enabled: false  # Disable by default in production (enable only if needed for troubleshooting)
+# Set to true if you need mesh visualization in production
+
+kiali-server:
+  deployment:
+    replicas: 1
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+  
+  auth:
+    strategy: token  # Require Kubernetes token authentication
+    # For OpenID authentication, use:
+    # strategy: openid
+    # openid:
+    #   client_id: "kiali"
+    #   issuer_uri: "https://your-idp.com"
+    #   username_claim: "preferred_username"
+  
+  service:
+    type: ClusterIP  # Internal access only
+    # For external access via LoadBalancer:
+    # type: LoadBalancer
+  
+  external_services:
+    prometheus:
+      # Update URL to match your AKS Prometheus endpoint
+      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
+      # Common alternatives:
+      # url: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+      # url: "http://ama-metrics-prometheus-server.kube-system.svc.cluster.local:80"  # Azure Monitor
+    
+    grafana:
+      enabled: true
+      # Update URL to match your AKS Grafana endpoint
+      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+      # Common alternatives:
+      # in_cluster_url: "http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80"
+    
+    tracing:
+      enabled: false
+      # If using Jaeger/Zipkin:
+      # enabled: true
+      # url: "http://jaeger-query.tracing.svc.cluster.local:16686"
+  
+  kiali_feature_flags:
+    ui_defaults:
+      refresh_interval: "30s"  # Longer refresh in production to reduce load
+  
+  # Security context (production hardening)
+  deployment:
+    pod_security_context:
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
+    
+    security_context:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+
+labels:
+  environment: production
+  team: platform
+  managed-by: helm
+  component: observability
+  criticality: low  # Kiali is optional, not critical for mesh operation
+
+annotations:
+  description: "Optional mesh visualization - disable for air-gapped environments"

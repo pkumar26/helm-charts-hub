@@ -1,0 +1,45 @@
+# Staging environment values for kiali
+# Token authentication, moderate resources, enabled for testing
+
+enabled: true  # Enable in staging for testing
+
+kiali-server:
+  deployment:
+    replicas: 1
+    
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  auth:
+    strategy: token  # Require Kubernetes token authentication in staging
+  
+  service:
+    type: ClusterIP  # Internal access only
+  
+  external_services:
+    prometheus:
+      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
+    
+    grafana:
+      enabled: true
+      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+    
+    tracing:
+      enabled: false
+  
+  kiali_feature_flags:
+    ui_defaults:
+      refresh_interval: "15s"
+
+labels:
+  environment: staging
+  team: platform
+  managed-by: helm
+  component: observability
+
+annotations: {}

@@ -1,0 +1,94 @@
+{{- if .Values.enabled }}
+🎯 Kiali has been deployed!
+
+Kiali provides mesh observability and visualization for your Istio service mesh.
+
+📊 Dashboard Access:
+
+1. Port Forward (Quick Access):
+   kubectl port-forward -n {{ include "kiali.namespace" . }} svc/kiali 20001:20001
+   
+   Then open: http://localhost:20001
+
+{{- if eq (index .Values "kiali-server" "service" "type" | default "ClusterIP") "NodePort" }}
+
+2. NodePort (Direct Access):
+   kubectl get svc kiali -n {{ include "kiali.namespace" . }}
+   
+   Access via: http://<node-ip>:{{ index .Values "kiali-server" "service" "node_port" | default "30020" }}
+{{- end }}
+
+{{- if (index .Values "kiali-server" "ingress" "enabled" | default false) }}
+
+3. Ingress (External Access):
+{{- range (index .Values "kiali-server" "ingress" "hosts" | default list) }}
+   https://{{ . }}
+{{- end }}
+{{- end }}
+
+🔐 Authentication:
+
+{{- $authStrategy := index .Values "kiali-server" "auth" "strategy" | default "anonymous" }}
+{{- if eq $authStrategy "anonymous" }}
+  Strategy: Anonymous (no authentication required)
+  ⚠️  Warning: Anyone with access can view the dashboard
+{{- else if eq $authStrategy "token" }}
+  Strategy: Token (Kubernetes service account token required)
+  
+  Get a token for access:
+  kubectl create serviceaccount kiali-viewer -n {{ include "kiali.namespace" . }}
+  kubectl create clusterrolebinding kiali-viewer --clusterrole=view --serviceaccount={{ include "kiali.namespace" . }}:kiali-viewer
+  kubectl create token kiali-viewer -n {{ include "kiali.namespace" . }} --duration=24h
+{{- else if eq $authStrategy "openid" }}
+  Strategy: OpenID Connect
+  Issuer: {{ index .Values "kiali-server" "auth" "openid" "issuer_uri" }}
+  Client ID: {{ index .Values "kiali-server" "auth" "openid" "client_id" }}
+{{- end }}
+
+📈 Data Sources:
+
+  Prometheus: {{ index .Values "kiali-server" "external_services" "prometheus" "url" }}
+{{- if (index .Values "kiali-server" "external_services" "grafana" "enabled" | default false) }}
+  Grafana: {{ index .Values "kiali-server" "external_services" "grafana" "in_cluster_url" }}
+{{- end }}
+{{- if (index .Values "kiali-server" "external_services" "tracing" "enabled" | default false) }}
+  Tracing: {{ index .Values "kiali-server" "external_services" "tracing" "url" }}
+{{- end }}
+
+ℹ️  Features:
+  • Service graph visualization
+  • Traffic metrics and health
+  • Configuration validation
+  • Istio config management
+{{- if (index .Values "kiali-server" "external_services" "tracing" "enabled" | default false) }}
+  • Distributed tracing
+{{- end }}
+
+📚 Documentation:
+  • Kiali Docs: https://kiali.io/docs/
+  • Chart README: charts/istio/kiali/README.md
+
+🔧 Troubleshooting:
+  If metrics are not showing, verify:
+  1. Prometheus is accessible from Kiali pod
+  2. Istio sidecars are injected in your workload namespaces
+  3. Istio telemetry is enabled (it is by default)
+
+{{- else }}
+⚠️  Kiali is DISABLED
+
+Kiali is an optional component for mesh visualization. It is currently disabled.
+
+To enable Kiali:
+  helm upgrade {{ .Release.Name }} charts/istio/kiali \
+    --namespace {{ .Release.Namespace }} \
+    --reuse-values \
+    --set enabled=true
+
+Why Kiali is Optional:
+  • Not required for mesh operation
+  • Useful for visualization and troubleshooting
+  • Can be skipped in air-gapped/minimal environments
+  • You can use CLI tools (istioctl, kubectl) instead
+
+{{- end }}
