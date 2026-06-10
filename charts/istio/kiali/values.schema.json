@@ -40,7 +40,7 @@
             "image_version": {
               "type": "string",
               "pattern": "^v\\d+\\.\\d+(\\.\\d+)?$",
-              "default": "v1.86"
+              "default": "v2.10"
             },
             "image_pull_policy": {
               "type": "string",
