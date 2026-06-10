@@ -1,0 +1,16 @@
+# Development environment overlay for istio-base
+# This file is used with: helm install istio-base charts/istio/base -f environments/dev/istio-base.values.yaml
+
+# Use dev-specific configuration
+revision: ""
+namespace: istio-system
+validationWebhook: true
+
+labels:
+  environment: dev
+  managed-by: helm
+  cluster: dev-aks-01
+
+annotations:
+  description: "Development Istio base - dev-aks-01"
+  contact: "dev-team@example.com"

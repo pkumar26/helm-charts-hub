@@ -1,0 +1,45 @@
+# Production environment overlay for istiod
+revision: ""
+global:
+  hub: docker.io/istio
+  tag: "1.23.0-distroless"  # FIPS-compliant distroless image
+  istioNamespace: istio-system
+  fips:
+    enabled: true  # FIPS 140-2 compliance
+
+istiod:
+  pilot:
+    replicaCount: 3  # High availability
+    autoscaleEnabled: false  # Managed via customAutoscaling
+    resources:
+      requests:
+        cpu: 500m  # FR-007
+        memory: 2Gi  # FR-007
+    env:
+      GOFIPS: "1"
+      FIPS_MODE: "true"
+
+customAutoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+security:
+  peerAuthentication:
+    enabled: true
+    mode: STRICT  # FR-004
+  authorizationPolicy:
+    denyAll:
+      enabled: true  # FR-005
+    allowWebhook:
+      enabled: true
+    allowXDS:
+      enabled: true
+  networkPolicy:
+    enabled: true  # FR-010
+
+labels:
+  environment: production
+  cluster: prod-aks-01
+  compliance: fips-140-2

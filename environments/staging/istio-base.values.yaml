@@ -1,0 +1,18 @@
+# Staging environment overlay for istio-base
+# This file is used with: helm install istio-base charts/istio/base -f environments/staging/istio-base.values.yaml
+
+# Use staging-specific configuration
+revision: ""
+namespace: istio-system
+validationWebhook: true
+
+labels:
+  environment: staging
+  managed-by: argocd
+  cluster: staging-aks-01
+  team: platform
+
+annotations:
+  description: "Staging Istio base - staging-aks-01"
+  contact: "platform-team@example.com"
+  owner: "platform-team"

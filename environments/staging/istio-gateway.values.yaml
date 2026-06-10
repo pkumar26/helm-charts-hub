@@ -1,0 +1,21 @@
+# Staging cluster-specific values overlay for istio-gateway
+# Use with: helm install -f values-staging.yaml -f environments/staging/istio-gateway.values.yaml
+
+labels:
+  cluster: staging-aks-01
+  environment: staging
+  region: eastus
+  team: platform
+
+annotations:
+  deployment-target: "staging-aks-01.eastus.azure.com"
+  monitoring: "enabled"
+
+# Staging-specific resource adjustments
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
