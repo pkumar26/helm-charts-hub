@@ -1,0 +1,79 @@
+# NetworkPolicy: L3/L4 isolation for the shared Gateway pods
+#
+# Managed by: Platform Team
+# Mirrors the security baseline shipped by the `gateway-api` Helm chart.
+#
+# Requires a NetworkPolicy-capable CNI (e.g. Azure CNI with Cilium/Calico,
+# or Azure CNI Overlay with the network policy engine enabled on AKS).
+#
+# What it allows:
+# - Ingress: the Gateway listener ports (80/443) + Istio status port 15021
+# - Egress:  DNS, istiod (xDS 15012 / webhook 15017), ztunnel HBONE (15008),
+#            and forwarding to mesh workloads on ephemeral/app ports.
+# Everything else is denied.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istio-gateway-network-policy
+  namespace: istio-system
+spec:
+  # Select the auto-created gateway Deployment pods (Gateway API label)
+  podSelector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: istio-gateway
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow inbound traffic on the Gateway listener ports from any namespace
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 80
+    # Uncomment when the HTTPS listener is enabled in gateway.yaml
+    # - protocol: TCP
+    #   port: 443
+  # Allow the Istio status port for Azure LB health probes / readiness
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15021
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow communication to the istiod control plane (xDS + webhook)
+  - to:
+    - podSelector:
+        matchLabels:
+          app: istiod
+    ports:
+    - protocol: TCP
+      port: 15012  # xDS mTLS
+    - protocol: TCP
+      port: 15017  # Webhook
+  # Allow ztunnel (ambient data plane) traffic for HBONE tunneling
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ztunnel
+    ports:
+    - protocol: TCP
+      port: 15008  # HBONE
+  # Allow forwarding to mesh workloads across namespaces
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 1024
+      endPort: 65535

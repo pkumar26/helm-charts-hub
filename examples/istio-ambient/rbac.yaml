@@ -1,0 +1,154 @@
+# RBAC Configuration: Platform Team Controls Gateways, App Teams Control HTTPRoutes
+#
+# This setup ensures:
+# - Only platform-team can create/modify/delete Gateways
+# - All teams can create HTTPRoutes in their own namespaces
+# - All teams can read Gateway information (needed for HTTPRoute parentRefs)
+
+---
+# Platform Team: Full Gateway Management
+# Grant this to your platform/infrastructure team's service accounts or users
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: platform-gateway-admin
+rules:
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gateways
+  - gatewayclasses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+---
+# Bind this to your platform team
+# Example: Binding to a platform-team namespace's default service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: platform-team-gateway-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: platform-gateway-admin
+subjects:
+# Option 1: Bind to specific users (for kubectl access)
+- kind: User
+  name: platform-admin@example.com  # Replace with actual user email/name
+  apiGroup: rbac.authorization.k8s.io
+# Option 2: Bind to a specific group (recommended for teams)
+- kind: Group
+  name: platform-team  # Replace with your Azure AD group or K8s group
+  apiGroup: rbac.authorization.k8s.io
+# Option 3: Bind to service accounts (for CI/CD pipelines)
+# - kind: ServiceAccount
+#   name: platform-deployer
+#   namespace: platform-system
+
+---
+# App Teams: Read-only Gateway Access (needed for HTTPRoute creation)
+# This allows teams to reference Gateways in their HTTPRoutes
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gateway-reader
+rules:
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gateways
+  - gatewayclasses
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+# Grant all authenticated users read access to Gateways
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: all-users-gateway-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gateway-reader
+subjects:
+- kind: Group
+  name: system:authenticated  # All authenticated users
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# App Teams: HTTPRoute Management in Their Namespace
+# This is a template - create one per team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: httproute-manager
+  namespace: default  # Change to team namespace (e.g., team-a, team-b)
+rules:
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - httproutes
+  - referencegrants
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+
+---
+# Bind HTTPRoute management to team members
+# Create one per team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: team-httproute-manager
+  namespace: default  # Change to team namespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: httproute-manager
+subjects:
+# Option 1: Bind to specific users
+- kind: User
+  name: developer@example.com  # Replace with team member
+  apiGroup: rbac.authorization.k8s.io
+# Option 2: Bind to a team group (recommended)
+- kind: Group
+  name: team-developers  # Replace with your Azure AD group
+  apiGroup: rbac.authorization.k8s.io
+# Option 3: Bind to service account (for team CI/CD)
+- kind: ServiceAccount
+  name: default  # Or team-specific SA
+  namespace: default
+
+---
+# Deny Gateway Creation for Non-Platform Users
+# This is a safety net - remove default permissions if they exist
+# Note: By default, users don't have Gateway create permissions
+# This is just documentation of what NOT to grant
+
+# ❌ DO NOT create this binding for app teams:
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   name: all-users-gateway-admin  # DANGEROUS - Don't do this!
+# roleRef:
+#   apiGroup: rbac.authorization.k8s.io
+#   kind: ClusterRole
+#   name: platform-gateway-admin
+# subjects:
+# - kind: Group
+#   name: system:authenticated

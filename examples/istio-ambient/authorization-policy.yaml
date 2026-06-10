@@ -1,0 +1,68 @@
+# AuthorizationPolicy: Default-deny access control for the shared Gateway
+#
+# Managed by: Platform Team
+# Mirrors the security baseline shipped by the `gateway-api` Helm chart so that a
+# manual setup gets the same protection.
+#
+# How it works (ambient mode):
+# - The policy attaches to the Gateway API Gateway via `targetRefs` (the
+#   ambient-native mechanism) instead of a pod `selector`. Enforcement happens
+#   at the gateway/waypoint.
+# - `action: ALLOW` + an explicit `rules` allowlist means anything that does NOT
+#   match a rule is denied. This is the "default-deny with allowlist" pattern.
+#
+# IMPORTANT: An ALLOW rule with an empty `from`/`to` matches ALL traffic. Always
+# specify namespaces/methods/principals so the allowlist is meaningful.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: istio-gateway-authz
+  namespace: istio-system
+spec:
+  # Attach to the shared Gateway (must match the Gateway resource name)
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: istio-gateway
+  action: ALLOW
+  rules:
+  # Allow requests originating from the mesh control plane and the production
+  # application namespaces, limited to standard HTTP verbs. Everything else is
+  # denied by default.
+  - from:
+    - source:
+        namespaces:
+        - istio-system
+        - production
+    to:
+    - operation:
+        methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+
+---
+# Example: tighten further by source principal (mTLS identity) and path.
+# Uncomment and adapt for stricter zero-trust enforcement.
+#
+# apiVersion: security.istio.io/v1
+# kind: AuthorizationPolicy
+# metadata:
+#   name: istio-gateway-authz-strict
+#   namespace: istio-system
+# spec:
+#   targetRefs:
+#   - group: gateway.networking.k8s.io
+#     kind: Gateway
+#     name: istio-gateway
+#   action: ALLOW
+#   rules:
+#   - from:
+#     - source:
+#         principals:
+#         - "cluster.local/ns/production/sa/frontend"
+#     to:
+#     - operation:
+#         methods: ["GET", "POST"]
+#         paths: ["/api/*"]
