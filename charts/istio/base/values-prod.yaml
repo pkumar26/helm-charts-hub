@@ -1,0 +1,27 @@
+# Production environment values for istio-base chart
+# Production configuration with strict policies
+
+# Istio revision tracking - use default revision
+# For canary upgrades, set this to a specific revision (e.g., "1-23-0")
+revision: ""
+
+# Namespace configuration
+namespace: istio-system
+
+# Enable validation webhook - REQUIRED for production
+validationWebhook: true
+
+# Production-specific labels
+labels:
+  environment: production
+  managed-by: helm
+  team: platform
+  compliance: fips-140-2
+  security-zone: classified
+
+# Production-specific annotations
+annotations:
+  description: "Production Istio base installation with FIPS compliance"
+  owner: "platform-team"
+  cost-center: "infrastructure"
+  security-baseline: "strict"

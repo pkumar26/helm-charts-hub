@@ -1,0 +1,22 @@
+# Staging environment values for istio-base chart
+# Moderate configuration for pre-production testing
+
+# Istio revision tracking - use default revision
+revision: ""
+
+# Namespace configuration
+namespace: istio-system
+
+# Enable validation webhook
+validationWebhook: true
+
+# Staging-specific labels
+labels:
+  environment: staging
+  managed-by: helm
+  team: platform
+
+# Staging-specific annotations
+annotations:
+  description: "Staging Istio base installation"
+  owner: "platform-team"

@@ -1,0 +1,17 @@
+# CI test values for istio-base chart
+# Used by chart-testing (ct) in CI/CD pipelines
+
+# Use minimal configuration for faster CI runs
+revision: ""
+namespace: istio-system
+validationWebhook: true
+
+# CI-specific labels
+labels:
+  environment: ci
+  managed-by: helm
+  test: "true"
+
+# CI-specific annotations
+annotations:
+  description: "CI test installation"

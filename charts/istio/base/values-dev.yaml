@@ -1,0 +1,20 @@
+# Development environment values for istio-base chart
+# Minimal configuration for local development and testing
+
+# Istio revision tracking - use default revision
+revision: ""
+
+# Namespace configuration
+namespace: istio-system
+
+# Enable validation webhook for development
+validationWebhook: true
+
+# Development-specific labels
+labels:
+  environment: dev
+  managed-by: helm
+
+# Development-specific annotations
+annotations:
+  description: "Development Istio base installation"
