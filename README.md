@@ -100,6 +100,55 @@ See [CHARTS.md](CHARTS.md) for the complete list of available charts with descri
 | [nginx-controller](charts/nginx-controller/) | NGINX-based edge controller (Ingress)                 | Controller  |
 | [envoy-controller](charts/envoy-controller/) | Envoy Gateway controller — Gateway API-native (Envoy Proxy data plane) | Controller |
 | [kgateway-controller](charts/kgateway-controller/) | kgateway controller — CNCF Gateway API implementation (Envoy proxy) | Controller |
+| [istio/base](charts/istio/base/) | Istio base — CRDs and cluster-wide resources (install first) | Service Mesh |
+| [istio/istiod](charts/istio/istiod/) | Istio control plane — FIPS 140-2 compliant service mesh | Service Mesh |
+| [istio/gateway](charts/istio/gateway/) | Istio gateway — FIPS-compliant ingress with security baseline | Service Mesh |
+| [istio/kiali](charts/istio/kiali/) | Kiali dashboard — optional mesh observability | Service Mesh |
+
+### Istio Service Mesh on AKS
+
+The repository includes production-ready Istio charts for Azure Kubernetes Service (AKS) with **FIPS 140-2 compliance** support:
+
+**Installation Order** (critical):
+1. **istio/base** — Install CRDs first
+2. **istio/istiod** — Control plane (requires FIPS-enabled node pool for production)
+3. **istio/gateway** — Ingress gateway with STRICT mTLS and security baseline
+4. **istio/kiali** — Optional mesh visualization (can skip for air-gapped/minimal environments)
+
+**Quick Start**:
+```bash
+# Development deployment (minimal resources, PERMISSIVE mTLS)
+./examples/deploy-istio-dev.sh --with-kiali
+
+# Production deployment (FIPS, STRICT mTLS, full security)
+# Prerequisites: AKS cluster with FIPS-enabled node pool
+./examples/deploy-istio-production.sh --with-kiali
+
+# Validate deployment
+./examples/validate-istio-deployment.sh --environment production
+```
+
+**FIPS Requirements** (production):
+- AKS cluster with FIPS-enabled node pool: `az aks nodepool add --enable-fips-image --labels fips=enabled`
+- Kubernetes 1.26+
+- Distroless images with BoringSSL (Certificate #4407)
+- See [Istio AKS Deployment Guide](docs/istio-aks-deployment.md) for complete setup
+
+**Features**:
+- ✅ FIPS 140-2 compliance for production workloads
+- ✅ Progressive security (dev → staging → production)
+- ✅ STRICT mTLS enforcement with AuthorizationPolicy and NetworkPolicy
+- ✅ High availability with HPA (3-5 replicas)
+- ✅ Canary upgrades for zero-downtime version updates
+- ✅ Automated deployment and validation scripts
+
+**Documentation**:
+- [Deployment Guide](docs/istio-aks-deployment.md) — Complete guide with upgrade procedures
+- [Examples README](examples/README.md) — Deployment scripts and troubleshooting
+- [Base Chart](charts/istio/base/README.md) — CRDs and installation order
+- [Istiod Chart](charts/istio/istiod/README.md) — Control plane with canary upgrade guide
+- [Gateway Chart](charts/istio/gateway/README.md) — Ingress with security baseline
+- [Kiali Chart](charts/istio/kiali/README.md) — Optional observability dashboard
 
 ## Troubleshooting
 
