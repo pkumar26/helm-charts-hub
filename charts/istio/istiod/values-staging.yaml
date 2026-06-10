@@ -1,0 +1,76 @@
+# Staging environment values for istiod
+# Moderate configuration for pre-production testing
+
+revision: ""
+
+global:
+  hub: docker.io/istio
+  tag: "1.23.0"
+  istioNamespace: istio-system
+  
+  # FIPS disabled for staging (enable if testing FIPS)
+  fips:
+    enabled: false
+
+istiod:
+  pilot:
+    # 2 replicas for moderate HA
+    replicaCount: 2
+
+    # Wrapper chart manages autoscaling via customAutoscaling
+    autoscaleEnabled: false
+
+    resources:
+      requests:
+        cpu: 300m
+        memory: 1Gi
+      limits:
+        cpu: 1500m
+        memory: 2Gi
+
+    # Pod anti-affinity for spreading across nodes
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - istiod
+            topologyKey: kubernetes.io/hostname
+
+# HPA enabled for staging
+customAutoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+
+# Moderate security for staging
+security:
+  peerAuthentication:
+    enabled: true
+    mode: STRICT  # Enforce mTLS in staging
+  
+  authorizationPolicy:
+    denyAll:
+      enabled: false  # Can enable for testing
+    allowWebhook:
+      enabled: true
+    allowXDS:
+      enabled: true
+  
+  networkPolicy:
+    enabled: true  # Enable network isolation
+
+labels:
+  environment: staging
+  managed-by: helm
+  team: platform
+
+annotations:
+  description: "Staging istiod installation"
+  owner: "platform-team"

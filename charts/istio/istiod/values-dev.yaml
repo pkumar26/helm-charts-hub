@@ -1,0 +1,57 @@
+# Development environment values for istiod
+# Minimal configuration for local development and testing
+
+revision: ""
+
+global:
+  hub: docker.io/istio
+  tag: "1.23.0"
+  istioNamespace: istio-system
+  
+  # FIPS disabled for dev (faster iteration)
+  fips:
+    enabled: false
+
+istiod:
+  pilot:
+    # Single replica for dev
+    replicaCount: 1
+
+    # Wrapper chart manages autoscaling via customAutoscaling
+    autoscaleEnabled: false
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# HPA disabled for dev
+customAutoscaling:
+  enabled: false
+
+# Relaxed security for development
+security:
+  peerAuthentication:
+    enabled: true
+    mode: PERMISSIVE  # Allow plaintext for debugging
+  
+  authorizationPolicy:
+    denyAll:
+      enabled: false  # No default deny in dev
+    allowWebhook:
+      enabled: false
+    allowXDS:
+      enabled: false
+  
+  networkPolicy:
+    enabled: false  # No network isolation in dev
+
+labels:
+  environment: dev
+  managed-by: helm
+
+annotations:
+  description: "Development istiod installation"
