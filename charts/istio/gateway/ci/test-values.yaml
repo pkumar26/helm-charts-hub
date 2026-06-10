@@ -1,0 +1,51 @@
+# CI test values for istio-gateway chart
+# Minimal configuration for chart-testing validation
+
+global:
+  fips:
+    enabled: false
+
+gateway:
+  enabled: true
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+
+service:
+  type: ClusterIP  # Use ClusterIP for CI testing
+  ports:
+  - name: http2
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+
+security:
+  peerAuthentication:
+    enabled: false
+  authorizationPolicy:
+    enabled: false
+  networkPolicy:
+    enabled: false
+
+labels:
+  environment: ci
+  team: platform
+
+annotations: {}

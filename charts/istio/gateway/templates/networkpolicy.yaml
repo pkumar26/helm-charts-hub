@@ -1,0 +1,58 @@
+{{- if .Values.security.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "istio-gateway.fullname" . }}-network-policy
+  namespace: {{ include "istio-gateway.namespace" . }}
+  labels:
+    {{- include "istio-gateway.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      istio: ingressgateway
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow HTTP/HTTPS traffic from internet
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080  # HTTP
+    - protocol: TCP
+      port: 8443  # HTTPS
+  # Allow status port for health checks
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15021  # Status port
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow communication to istiod control plane
+  - to:
+    - podSelector:
+        matchLabels:
+          app: istiod
+    ports:
+    - protocol: TCP
+      port: 15012  # xDS mTLS
+    - protocol: TCP
+      port: 15017  # Webhook
+  # Allow communication to mesh workloads (all pods in all namespaces)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 1024
+      endPort: 65535
+{{- end }}

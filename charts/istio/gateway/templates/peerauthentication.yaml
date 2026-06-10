@@ -1,0 +1,15 @@
+{{- if .Values.security.peerAuthentication.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: {{ include "istio-gateway.fullname" . }}-mtls
+  namespace: {{ include "istio-gateway.namespace" . }}
+  labels:
+    {{- include "istio-gateway.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  mtls:
+    mode: {{ .Values.security.peerAuthentication.mode }}
+{{- end }}

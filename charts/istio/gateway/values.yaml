@@ -1,0 +1,72 @@
+# Default values for istio-gateway chart wrapper
+# This chart wraps the upstream Istio gateway chart and adds security baseline templates
+
+## Global Istio configuration (used by custom templates)
+global:
+  # Istio hub for pulling images  
+  hub: docker.io/istio
+  
+  # Istio version tag
+  tag: 1.23.0
+  
+  # Istio namespace (where control plane is installed)
+  istioNamespace: istio-system
+  
+  # FIPS 140-2 compliance configuration
+  fips:
+    enabled: false  # Set to true for production environments requiring FIPS compliance
+    # When enabled, uses distroless images with BoringSSL/BoringCrypto (Certificate #4407)
+
+## Custom Istio Gateway CRD resource configuration
+istioGateway:
+  # Enable gateway CRD resource creation
+  enabled: true
+  
+  # Gateway servers configuration
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "*"
+    tls:
+      mode: SIMPLE
+      minProtocolVersion: TLSV1_2
+
+## Security baseline configuration (custom templates)
+security:
+  # PeerAuthentication configuration (FR-004: mTLS enforcement)
+  peerAuthentication:
+    enabled: false
+    mode: PERMISSIVE  # STRICT for production
+  
+  # AuthorizationPolicy configuration (FR-005: Access control)
+  authorizationPolicy:
+    enabled: false
+    action: ALLOW
+    rules: []
+  
+  # NetworkPolicy configuration (FR-010: L3/L4 isolation)
+  networkPolicy:
+    enabled: false
+
+## Custom HPA configuration (FR-008: HPA with 80% CPU target)
+## Note: The upstream chart has its own autoscaling, this is for custom HPA template
+customAutoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+  targetDeploymentName: istio-ingressgateway
+
+## Values passed to the upstream gateway subchart
+## These are passed through to the Istio gateway chart
+gateway: {}  # Use upstream chart's defaults, override in environment-specific values

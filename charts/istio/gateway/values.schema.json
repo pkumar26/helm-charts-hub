@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Istio Gateway Chart Values",
+  "description": "Schema for Istio gateway chart values.yaml - FIPS-compliant ingress gateway with security baseline",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "description": "Global Istio configuration",
+      "properties": {
+        "hub": {
+          "type": "string",
+          "description": "Container registry URL for Istio images",
+          "default": "docker.io/istio"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Istio image tag (use -distroless suffix for FIPS)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-distroless)?$",
+          "default": "1.23.0"
+        },
+        "istioNamespace": {
+          "type": "string",
+          "description": "Istio control plane namespace",
+          "default": "istio-system"
+        },
+        "fips": {
+          "type": "object",
+          "description": "FIPS 140-2 compliance configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable FIPS mode (requires distroless images with BoringSSL Certificate #4407)",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "istioGateway": {
+      "type": "object",
+      "description": "Custom Istio Gateway CRD resource configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable gateway CRD resource creation",
+          "default": true
+        },
+        "servers": {
+          "type": "array",
+          "description": "Gateway server configurations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "port": {
+                "type": "object",
+                "required": ["number", "name", "protocol"],
+                "properties": {
+                  "number": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "protocol": {
+                    "type": "string",
+                    "enum": ["HTTP", "HTTPS", "TCP", "TLS", "GRPC", "HTTP2", "MONGO", "REDIS", "MYSQL"]
+                  }
+                }
+              },
+              "hosts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "tls": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": ["PASSTHROUGH", "SIMPLE", "MUTUAL", "AUTO_PASSTHROUGH", "ISTIO_MUTUAL"]
+                  },
+                  "minProtocolVersion": {
+                    "type": "string",
+                    "enum": ["TLSV1_0", "TLSV1_1", "TLSV1_2", "TLSV1_3"],
+                    "description": "Minimum TLS version (TLSV1_2 or higher for FIPS)"
+                  }
+                }
+              }
+            }
+          },
+          "default": [
+            {
+              "port": {
+                "number": 80,
+                "name": "http",
+                "protocol": "HTTP"
+              },
+              "hosts": ["*"]
+            },
+            {
+              "port": {
+                "number": 443,
+                "name": "https",
+                "protocol": "HTTPS"
+              },
+              "hosts": ["*"],
+              "tls": {
+                "mode": "SIMPLE",
+                "minProtocolVersion": "TLSV1_2"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "description": "Security baseline configuration",
+      "properties": {
+        "peerAuthentication": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["STRICT", "PERMISSIVE", "DISABLE"],
+              "description": "mTLS mode: STRICT for production",
+              "default": "PERMISSIVE"
+            }
+          }
+        },
+        "authorizationPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "action": {
+              "type": "string",
+              "enum": ["ALLOW", "DENY", "CUSTOM"],
+              "default": "ALLOW"
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "default": []
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Kubernetes NetworkPolicy for L3/L4 isolation",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "customAutoscaling": {
+      "type": "object",
+      "description": "Custom HPA configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable custom HPA",
+          "default": false
+        },
+        "minReplicas": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 2
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 20,
+          "default": 5
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 95,
+          "default": 80
+        },
+        "targetMemoryUtilizationPercentage": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 95,
+          "default": 80
+        },
+        "targetDeploymentName": {
+          "type": "string",
+          "description": "Name of the deployment to scale",
+          "default": "istio-ingressgateway"
+        }
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "description": "Values passed to upstream gateway subchart",
+      "additionalProperties": true,
+      "default": {}
+    }
+  },
+  "additionalProperties": true
+}
