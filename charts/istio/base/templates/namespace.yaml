@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "istio-base.namespace" . }}
+  labels:
+    {{- include "istio-base.labels" . | nindent 4 }}
+    {{- include "istio-base.revisionLabel" . | nindent 4 }}
+    # Istio mesh labels for sidecar injection
+    istio-injection: disabled  # Do not inject into istio-system itself
+    topology.istio.io/network: default
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

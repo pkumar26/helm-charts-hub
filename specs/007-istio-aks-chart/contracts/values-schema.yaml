@@ -1,0 +1,757 @@
+# Contract: Helm Values Schema
+
+**Feature**: 007-istio-aks-chart  
+**Contract Type**: Values File Structure Definition  
+**Date**: 2026-05-20
+
+## Purpose
+
+This contract defines the canonical structure for `values.yaml` files across all three Istio charts (base, istiod, gateway), ensuring consistency and providing JSON Schema validation.
+
+---
+
+## Base Chart Values Schema
+
+**File**: `charts/istio/base/values.schema.json`
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Istio Base Chart Values",
+  "type": "object",
+  "required": ["istioVersion", "createNamespace"],
+  "properties": {
+    "istioVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Istio version to install (semver format)",
+      "examples": ["1.23.0"]
+    },
+    "createNamespace": {
+      "type": "boolean",
+      "description": "Whether to create istio-system namespace",
+      "default": true
+    },
+    "validationWebhook": {
+      "type": "boolean",
+      "description": "Enable CRD schema validation",
+      "default": true
+    }
+  }
+}
+```
+
+**values.yaml:**
+```yaml
+# Istio version
+istioVersion: "1.23.0"
+
+# Namespace creation
+createNamespace: true
+
+# CRD validation
+validationWebhook: true
+```
+
+---
+
+## istiod Chart Values Schema
+
+**File**: `charts/istio/istiod/values.schema.json`
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Istio istiod Chart Values",
+  "type": "object",
+  "required": ["global", "replicaCount", "image", "resources"],
+  "properties": {
+    "global": {
+      "type": "object",
+      "required": ["istioVersion", "fips"],
+      "properties": {
+        "istioVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "fips": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable FIPS 140-2 mode"
+            }
+          }
+        },
+        "hub": {
+          "type": "string",
+          "description": "Container registry URL",
+          "default": "docker.io/istio"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Image tag (use -distroless for FIPS)"
+        }
+      }
+    },
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Number of istiod replicas (odd number recommended)"
+    },
+    "image": {
+      "type": "object",
+      "required": ["repository", "tag", "pullPolicy"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "default": "istio/pilot"
+        },
+        "tag": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-distroless)?$"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "default": "IfNotPresent"
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "required": ["requests", "limits"],
+      "properties": {
+        "requests": {
+          "type": "object",
+          "required": ["cpu", "memory"],
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "pattern": "^\\d+m?$",
+              "examples": ["500m", "1"]
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^\\d+(Mi|Gi)$",
+              "examples": ["2Gi", "512Mi"]
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["cpu", "memory"],
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "pattern": "^\\d+m?$"
+            },
+            "memory": {
+              "type": "string",
+              "pattern": "^\\d+(Mi|Gi)$"
+            }
+          }
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "required": ["runAsNonRoot", "runAsUser"],
+      "properties": {
+        "runAsNonRoot": {
+          "type": "boolean",
+          "const": true,
+          "description": "Must be true for production"
+        },
+        "runAsUser": {
+          "type": "integer",
+          "const": 1337,
+          "description": "Istio default user ID"
+        },
+        "fsGroup": {
+          "type": "integer",
+          "default": 1337
+        },
+        "seccompProfile": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["RuntimeDefault", "Unconfined", "Localhost"]
+            }
+          }
+        }
+      }
+    },
+    "securityContext": {
+      "type": "object",
+      "required": ["allowPrivilegeEscalation", "readOnlyRootFilesystem", "capabilities"],
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "type": "boolean",
+          "const": false,
+          "description": "Must be false for production"
+        },
+        "readOnlyRootFilesystem": {
+          "type": "boolean",
+          "description": "Should be true for production"
+        },
+        "capabilities": {
+          "type": "object",
+          "required": ["drop"],
+          "properties": {
+            "drop": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["ALL", "NET_ADMIN", "SYS_ADMIN"]
+              },
+              "minItems": 1,
+              "description": "Must include ALL for production"
+            }
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": ["mtls", "authorization", "networkPolicy"],
+      "properties": {
+        "mtls": {
+          "type": "object",
+          "required": ["enabled", "mode"],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["STRICT", "PERMISSIVE", "DISABLE"],
+              "description": "STRICT for production, PERMISSIVE for dev"
+            }
+          }
+        },
+        "authorization": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable default-deny authorization policies"
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Kubernetes NetworkPolicy"
+            }
+          }
+        }
+      }
+    },
+    "autoscaling": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "minReplicas": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 20
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 90,
+          "default": 80
+        }
+      },
+      "if": {
+        "properties": {"enabled": {"const": true}}
+      },
+      "then": {
+        "required": ["minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"]
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Node selector labels (e.g., fips: 'true' for FIPS nodes)"
+    },
+    "tolerations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {"type": "string"},
+          "operator": {"type": "string", "enum": ["Exists", "Equal"]},
+          "value": {"type": "string"},
+          "effect": {"type": "string", "enum": ["NoSchedule", "PreferNoSchedule", "NoExecute"]}
+        }
+      }
+    },
+    "affinity": {
+      "type": "object",
+      "properties": {
+        "podAntiAffinity": {
+          "type": "object",
+          "description": "Anti-affinity rules to spread pods across zones"
+        }
+      }
+    }
+  }
+}
+```
+
+**values.yaml (default):**
+```yaml
+global:
+  istioVersion: "1.23.0"
+  fips:
+    enabled: false
+  hub: docker.io/istio
+  tag: 1.23.0
+
+replicaCount: 1
+
+image:
+  repository: pilot
+  tag: 1.23.0
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1337
+  fsGroup: 1337
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+    - ALL
+
+security:
+  mtls:
+    enabled: true
+    mode: PERMISSIVE
+  authorization:
+    enabled: false
+  networkPolicy:
+    enabled: false
+
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+```
+
+**values-prod.yaml:**
+```yaml
+global:
+  fips:
+    enabled: true
+  tag: 1.23.0-distroless
+
+replicaCount: 3
+
+image:
+  tag: 1.23.0-distroless
+  pullPolicy: Always
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+security:
+  mtls:
+    mode: STRICT
+  authorization:
+    enabled: true
+  networkPolicy:
+    enabled: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector:
+  fips: "true"
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchLabels:
+          app: istiod
+      topologyKey: topology.kubernetes.io/zone
+```
+
+---
+
+## Gateway Chart Values Schema
+
+**File**: `charts/istio/gateway/values.schema.json`
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Istio Gateway Chart Values",
+  "type": "object",
+  "required": ["global", "replicaCount", "image", "service", "resources"],
+  "properties": {
+    "global": {
+      "type": "object",
+      "required": ["istioVersion", "fips"],
+      "properties": {
+        "istioVersion": {"type": "string"},
+        "fips": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"}
+          }
+        },
+        "hub": {"type": "string"},
+        "tag": {"type": "string"}
+      }
+    },
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "image": {
+      "type": "object",
+      "required": ["repository", "tag", "pullPolicy"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "default": "proxyv2"
+        },
+        "tag": {"type": "string"},
+        "pullPolicy": {"type": "string"}
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": ["type", "ports"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["LoadBalancer", "NodePort", "ClusterIP"],
+          "description": "Service type (LoadBalancer recommended for AKS)"
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "port", "targetPort", "protocol"],
+            "properties": {
+              "name": {"type": "string"},
+              "port": {"type": "integer"},
+              "targetPort": {"type": "integer"},
+              "protocol": {"type": "string", "enum": ["TCP", "UDP"]}
+            }
+          },
+          "minItems": 1
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {"type": "string"},
+          "description": "Azure LB annotations for health probes"
+        },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "enum": ["Cluster", "Local"],
+          "description": "Local preserves client IP"
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "required": ["requests", "limits"],
+      "properties": {
+        "requests": {
+          "type": "object",
+          "required": ["cpu", "memory"],
+          "properties": {
+            "cpu": {"type": "string"},
+            "memory": {"type": "string"}
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["cpu", "memory"],
+          "properties": {
+            "cpu": {"type": "string"},
+            "memory": {"type": "string"}
+          }
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "required": ["runAsNonRoot", "runAsUser"],
+      "properties": {
+        "runAsNonRoot": {"type": "boolean"},
+        "runAsUser": {"type": "integer"},
+        "fsGroup": {"type": "integer"}
+      }
+    },
+    "securityContext": {
+      "type": "object",
+      "required": ["allowPrivilegeEscalation", "capabilities"],
+      "properties": {
+        "allowPrivilegeEscalation": {"type": "boolean"},
+        "readOnlyRootFilesystem": {"type": "boolean"},
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "drop": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": ["mtls", "authorization"],
+      "properties": {
+        "mtls": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "mode": {"type": "string", "enum": ["STRICT", "PERMISSIVE"]}
+          }
+        },
+        "authorization": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "allowedSources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ipBlocks": {
+                    "type": "array",
+                    "items": {"type": "string", "format": "ipv4"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "autoscaling": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "minReplicas": {"type": "integer"},
+        "maxReplicas": {"type": "integer"},
+        "targetCPUUtilizationPercentage": {"type": "integer"}
+      }
+    }
+  }
+}
+```
+
+**values.yaml:**
+```yaml
+global:
+  istioVersion: "1.23.0"
+  fips:
+    enabled: false
+  hub: docker.io/istio
+  tag: 1.23.0
+
+replicaCount: 1
+
+image:
+  repository: proxyv2
+  tag: 1.23.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  ports:
+  - name: http2
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8443
+    protocol: TCP
+  annotations: {}
+  externalTrafficPolicy: Local
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 2000m
+    memory: 1Gi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1337
+  fsGroup: 1337
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+    - ALL
+
+security:
+  mtls:
+    enabled: true
+    mode: PERMISSIVE
+  authorization:
+    enabled: false
+  networkPolicy:
+    enabled: false
+
+autoscaling:
+  enabled: false
+```
+
+**values-prod.yaml:**
+```yaml
+global:
+  fips:
+    enabled: true
+  tag: 1.23.0-distroless
+
+replicaCount: 3
+
+image:
+  tag: 1.23.0-distroless
+  pullPolicy: Always
+
+service:
+  type: LoadBalancer
+  ports:
+  - name: https
+    port: 443
+    targetPort: 8443
+    protocol: TCP
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz/ready"
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-interval: "5"
+  externalTrafficPolicy: Local
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+security:
+  mtls:
+    mode: STRICT
+  authorization:
+    enabled: true
+    allowedSources:
+    - ipBlocks:
+      - "10.0.0.0/8"
+      - "192.168.0.0/16"
+  networkPolicy:
+    enabled: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector:
+  fips: "true"
+```
+
+---
+
+## Validation
+
+### Helm Lint with Schema
+
+```bash
+# Install Helm schema plugin
+helm plugin install https://github.com/losisin/helm-values-schema-json
+
+# Validate values files
+helm lint charts/istio/istiod --values charts/istio/istiod/values-prod.yaml
+```
+
+### JSON Schema Validation
+
+```bash
+# Install AJV (JSON Schema validator)
+npm install -g ajv-cli
+
+# Validate values file against schema
+ajv validate \
+  -s charts/istio/istiod/values.schema.json \
+  -d charts/istio/istiod/values-prod.yaml
+```
+
+---
+
+## Summary
+
+This values schema contract ensures:
+- ✅ Consistent structure across all three charts
+- ✅ Type validation (integers, strings, booleans)
+- ✅ Required fields enforcement
+- ✅ Enum validation (e.g., mTLS mode)
+- ✅ Pattern matching (e.g., semver versions)
+- ✅ Conditional requirements (e.g., HPA settings when enabled)
+
+All values files MUST pass schema validation before deployment to production.

@@ -1,0 +1,101 @@
+{{- if .Values.rbac.enabled }}
+---
+# ClusterRole for platform administrators (full Gateway/GatewayClass management)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: platform-gateway-admin
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["gateway.networking.k8s.io"]
+  resources: ["gateways", "gatewayclasses", "httproutes", "referencegrants"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch", "patch"]
+---
+# ClusterRole for reading Gateways (needed for HTTPRoute parentRefs)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gateway-reader
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["gateway.networking.k8s.io"]
+  resources: ["gateways", "gatewayclasses"]
+  verbs: ["get", "list", "watch"]
+---
+# ClusterRoleBinding for platform admins
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: platform-gateway-admin
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: platform-gateway-admin
+subjects:
+{{- range .Values.rbac.platformAdmins }}
+- kind: User
+  name: {{ . }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+---
+# Role for managing HTTPRoutes and ReferenceGrants in a namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: httproute-manager
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["gateway.networking.k8s.io"]
+  resources: ["httproutes", "referencegrants"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch"]
+---
+{{- range .Values.rbac.applicationTeams }}
+{{- range .namespaces }}
+---
+# RoleBinding for {{ $.Values.name }} in {{ . }} namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: httproute-manager-{{ $.name }}
+  namespace: {{ . }}
+  labels:
+    {{- include "gateway-api.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: httproute-manager
+subjects:
+- kind: Group
+  name: {{ $.name }}
+  apiGroup: rbac.authorization.k8s.io
+---
+# RoleBinding for gateway reader in {{ . }} namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gateway-reader-{{ $.name }}
+  namespace: {{ . }}
+  labels:
+    {{- include "gateway-api.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gateway-reader
+subjects:
+- kind: Group
+  name: {{ $.name }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}
+{{- end }}

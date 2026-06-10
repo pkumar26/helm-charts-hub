@@ -1,0 +1,44 @@
+# CI test values for kiali chart
+# Minimal configuration for testing chart rendering and validation
+
+enabled: true  # Enable for CI testing
+
+kiali-server:
+  deployment:
+    replicas: 1
+    
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+  
+  auth:
+    strategy: anonymous  # Use anonymous auth for CI tests
+  
+  service:
+    type: ClusterIP
+  
+  external_services:
+    prometheus:
+      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
+    
+    grafana:
+      enabled: false  # Disable for CI
+    
+    tracing:
+      enabled: false  # Disable for CI
+  
+  ingress:
+    enabled: false  # Disable for CI
+
+labels:
+  environment: ci
+  team: platform
+  managed-by: helm
+  component: observability
+
+annotations:
+  test: "true"

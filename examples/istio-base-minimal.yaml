@@ -1,0 +1,39 @@
+# Example: Minimal Istio Base Installation
+#
+# This example demonstrates the minimal base chart deployment for Istio.
+# The base chart installs Istio CRDs (Custom Resource Definitions) required
+# by the control plane and gateway components.
+#
+# Prerequisites:
+#   - Kubernetes cluster 1.26+
+#   - Helm 3.10+
+#
+# Installation:
+#   helm install istio-base charts/istio/base \
+#     --namespace istio-system \
+#     --create-namespace \
+#     -f examples/istio-base-minimal.yaml
+#
+# Verification:
+#   kubectl get crds | grep istio.io
+#   # Expected: 25+ Istio CRDs
+#
+# Next Steps:
+#   1. Install istiod (control plane): see istio-istiod-production.yaml
+#   2. Install gateway (ingress): see istio-gateway-production.yaml
+#
+
+# Use default base chart configuration
+# The base chart has minimal configuration surface as it only installs CRDs
+
+# Optionally set custom labels for all CRDs
+global:
+  labels:
+    environment: development
+    managed-by: helm
+
+# Enable validation webhooks (recommended for production)
+validationURL: ""
+
+# Default profiles are sufficient for most use cases
+defaultRevision: default

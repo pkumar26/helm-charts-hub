@@ -1,0 +1,96 @@
+# Staging environment values for istio-gateway
+# STRICT mTLS, 2 replicas, LoadBalancer service, HPA enabled
+
+global:
+  fips:
+    enabled: false  # Standard images in staging
+
+istioGateway:
+  enabled: true
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "*"
+    tls:
+      mode: SIMPLE
+      minProtocolVersion: TLSV1_2
+
+security:
+  peerAuthentication:
+    enabled: true
+    mode: STRICT  # Enforce mTLS in staging
+  authorizationPolicy:
+    enabled: true
+    action: ALLOW
+    rules:
+    - from:
+      - source:
+          namespaces:
+          - "*"  # Allow from all namespaces in staging
+  networkPolicy:
+    enabled: true  # Enable network policies in staging
+
+customAutoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+
+# Values for upstream gateway subchart
+gateway:
+  name: istio-ingressgateway
+  replicaCount: 2
+  
+  service:
+    type: LoadBalancer
+    ports:
+    - name: status-port
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - name: http2
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+  
+  resources:
+    requests:
+      cpu: 300m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  
+  autoscaling:
+    enabled: false  # Use customAutoscaling instead
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: istio
+              operator: In
+              values:
+              - ingressgateway
+          topologyKey: kubernetes.io/hostname
+  
+  labels:
+    environment: staging
+    team: platform
+    managed-by: helm

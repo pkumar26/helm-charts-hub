@@ -1,0 +1,51 @@
+---
+# Workaround for d2 cluster Azure LB bug
+# Routes traffic through working Traefik LoadBalancer to Istio Gateway
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: d2-via-traefik
+  namespace: d2sandboxdev
+  annotations:
+    # Enable path rewriting if needed
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+  - http:
+      paths:
+      # Route /da to da-svc through the gateway
+      - path: /da
+        pathType: Prefix
+        backend:
+          service:
+            name: da-svc
+            port:
+              number: 8080
+      # Route /d2config to d2config through the gateway
+      - path: /d2config
+        pathType: Prefix
+        backend:
+          service:
+            name: d2config
+            port:
+              number: 8080
+---
+# Optional: If you want to keep using the Istio Gateway internally
+# Change to ClusterIP since LoadBalancer doesn't work
+apiVersion: v1
+kind: Service
+metadata:
+  name: d2-gateway-istio-clusterip
+  namespace: istio-system
+spec:
+  type: ClusterIP
+  selector:
+    istio.io/gateway-name: d2-gateway
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  - port: 15021
+    targetPort: 15021
+    name: status-port

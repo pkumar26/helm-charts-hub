@@ -1,0 +1,11 @@
+{{- if .Values.security.authorizationPolicy.denyAll.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: {{ .Values.global.istioNamespace | default "istio-system" }}
+  labels:
+    {{- include "istiod.labels" . | nindent 4 }}
+spec:
+  {}  # Empty spec denies all traffic by default
+{{- end }}

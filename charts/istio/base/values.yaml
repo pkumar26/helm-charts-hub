@@ -1,0 +1,29 @@
+# Default values for istio-base chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Istio revision tracking - allows multiple Istio control planes
+# in the same cluster (e.g., canary upgrades)
+revision: ""
+
+# Namespace where Istio components will be installed
+namespace: istio-system
+
+# Enable validation webhook
+# Set to false if you want to disable the validation webhook
+validationWebhook: true
+
+# Additional labels to apply to all resources
+labels: {}
+  # Example:
+  # environment: production
+  # team: platform
+
+# Additional annotations to apply to all resources
+annotations: {}
+  # Example:
+  # managed-by: argocd
+  # cost-center: infrastructure
+
+# Base chart does not create running pods, only CRDs and namespace
+# Therefore, no image, resources, or runtime configuration is needed

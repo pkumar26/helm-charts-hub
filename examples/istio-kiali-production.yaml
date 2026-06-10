@@ -1,0 +1,419 @@
+# Example: Kiali Dashboard - Production Configuration (Optional)
+#
+# Kiali provides mesh observability and visualization for Istio.
+# This example demonstrates production-ready Kiali deployment with:
+# - Token-based authentication
+# - Integration with existing Prometheus/Grafana
+# - Security hardening
+# - Optional component (can be skipped for air-gapped/minimal environments)
+#
+# Prerequisites:
+#   - Istio base, istiod, and gateway installed and healthy
+#   - Prometheus (recommended): for metrics visualization
+#   - Grafana (optional): for dashboards integration
+#
+# When to Use Kiali:
+#   ✅ Development and debugging (visualize traffic flow)
+#   ✅ Troubleshooting mesh issues (identify misconfigurations)
+#   ✅ Learning Istio concepts (interactive mesh visualization)
+#   ✅ Operations/SRE teams (health monitoring)
+#
+# When to Skip Kiali:
+#   ⏭️  Air-gapped environments (requires external chart repository)
+#   ⏭️  Minimal deployments (adds ~500Mi memory overhead)
+#   ⏭️  Security-sensitive environments (additional attack surface)
+#   ⏭️  Already using commercial observability tools
+#
+# Installation:
+#   helm install kiali charts/istio/kiali \
+#     --namespace istio-system \
+#     -f examples/istio-kiali-production.yaml \
+#     --wait
+#
+# Access Methods:
+#   
+#   1. Port-Forward (Quick Access):
+#      kubectl port-forward -n istio-system svc/kiali 20001:20001
+#      Open: http://localhost:20001
+#   
+#   2. Ingress (Production):
+#      Create Istio Gateway and VirtualService for external access
+#      Configure TLS with cert-manager
+#   
+#   3. NodePort (Testing):
+#      Change service.type to NodePort
+#
+# Authentication:
+#   # Generate service account token (valid for 24 hours)
+#   kubectl create token kiali-service-account -n istio-system --duration=24h
+#   
+#   # For longer validity, create secret-based token:
+#   kubectl create serviceaccount kiali-user -n istio-system
+#   kubectl create token kiali-user -n istio-system --duration=8760h
+#
+# Verification:
+#   # Check Kiali pod
+#   kubectl get pods -n istio-system -l app=kiali
+#   
+#   # Check service
+#   kubectl get svc kiali -n istio-system
+#   
+#   # Test accessibility
+#   kubectl port-forward -n istio-system svc/kiali 20001:20001 &
+#   curl -I http://localhost:20001/kiali/
+#
+
+#
+# Enable Kiali (set to false to disable)
+#
+enabled: true
+
+#
+# Kiali Server Configuration
+#
+kiali-server:
+  #
+  # Deployment Configuration
+  #
+  deployment:
+    replicas: 1  # Single replica sufficient for most use cases
+    
+    # Resource limits
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    
+    # Security context
+    pod_security_context:
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
+    
+    security_context:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    
+    # Node affinity for FIPS nodes (optional)
+    node_selector:
+      # Uncomment to schedule on FIPS nodes
+      # fips: enabled
+    
+    # Pod labels
+    pod_labels:
+      app: kiali
+      version: v1.86.0
+      environment: production
+  
+  #
+  # Service Configuration
+  #
+  service:
+    type: ClusterIP  # Use ClusterIP, expose via Istio Gateway for production
+    port: 20001
+    
+    # For NodePort access (testing only):
+    # type: NodePort
+    # nodePort: 32000
+    
+    # For LoadBalancer (direct access, not recommended):
+    # type: LoadBalancer
+  
+  #
+  # Authentication Strategy
+  #
+  auth:
+    # Production: Use token-based authentication
+    # Options: anonymous, token, openid, openshift
+    strategy: token
+    
+    # OpenID Connect (for enterprise SSO)
+    # openid:
+    #   client_id: "kiali"
+    #   issuer_uri: "https://your-idp.example.com"
+    #   username_claim: "preferred_username"
+  
+  #
+  # External Services Integration
+  #
+  external_services:
+    # Istio configuration
+    istio:
+      # Root namespace where Istio is deployed
+      root_namespace: istio-system
+      
+      # Istio component status endpoints
+      component_status:
+        enabled: true
+        components:
+          - app_label: istiod
+            is_core: true
+          - app_label: istio-ingressgateway
+            is_core: true
+    
+    # Prometheus integration
+    prometheus:
+      # URL of Prometheus server
+      # Adjust based on your Prometheus deployment:
+      
+      # Option 1: kube-prometheus-stack (common)
+      url: "http://prometheus-kube-prometheus-prometheus.monitoring:9090"
+      
+      # Option 2: Azure Monitor managed Prometheus
+      # url: "https://<workspace-id>.prometheus.monitor.azure.com"
+      # auth:
+      #   type: bearer
+      #   token: "AAD_TOKEN"
+      
+      # Option 3: Prometheus Operator
+      # url: "http://prometheus-operated.monitoring:9090"
+      
+      # Option 4: Custom Prometheus
+      # url: "http://prometheus-server.default:80"
+    
+    # Grafana integration (optional)
+    grafana:
+      enabled: true
+      
+      # Grafana dashboard URLs
+      # Adjust based on your Grafana deployment:
+      
+      # Option 1: kube-prometheus-stack
+      url: "http://prometheus-grafana.monitoring:80"
+      in_cluster_url: "http://prometheus-grafana.monitoring:80"
+      
+      # Option 2: Azure Managed Grafana
+      # url: "https://<workspace-name>.grafana.azure.com"
+      # auth:
+      #   type: bearer
+      #   token: "AAD_TOKEN"
+      
+      # Grafana dashboards for Istio
+      dashboards:
+        - name: "Istio Control Plane"
+          variables:
+            namespace: "istio-system"
+        - name: "Istio Service Dashboard"
+          variables:
+            namespace: "var-namespace"
+            service: "var-service"
+        - name: "Istio Workload Dashboard"
+          variables:
+            namespace: "var-namespace"
+            workload: "var-workload"
+    
+    # Jaeger/Zipkin tracing (optional)
+    tracing:
+      enabled: false
+      # Uncomment if tracing is configured:
+      # in_cluster_url: "http://jaeger-query.tracing:16686"
+      # url: "http://jaeger-query.tracing:16686"
+      # use_grpc: true
+  
+  #
+  # Kiali Server Settings
+  #
+  server:
+    # Metrics and health endpoints
+    metrics_enabled: true
+    metrics_port: 9090
+    
+    # Web root path (useful behind reverse proxy)
+    web_root: "/kiali"
+    
+    # Observability features
+    observability:
+      metrics:
+        enabled: true
+        port: 9090
+      tracing:
+        enabled: false  # Enable if Jaeger/Zipkin configured
+  
+  #
+  # Kiali Features Configuration
+  #
+  kiali_feature_flags:
+    # Enable certificates info
+    certificates_information_indicators:
+      enabled: true
+      secrets:
+        - "istio-ca-secret"
+    
+    # Enable clustering (multi-cluster mesh)
+    clustering:
+      enabled: false  # Enable for multi-cluster setups
+    
+    # Disable unused features for security
+    istio_injection_action: true
+    istio_upgrade_action: false  # Disable in production
+  
+  #
+  # Installation Configuration
+  #
+  installation_tag: "Helm Installation"
+  
+  #
+  # Kubernetes Configuration
+  #
+  kubernetes_config:
+    # Burst and QPS for Kubernetes API calls
+    burst: 200
+    qps: 175
+    
+    # Cache settings
+    cache_enabled: true
+    cache_duration: 300  # 5 minutes
+  
+  #
+  # Istio Namespace Configuration
+  #
+  api:
+    namespaces:
+      # Namespaces to monitor (empty = all with istio-injection label)
+      include: []
+      exclude:
+        - "kube-system"
+        - "kube-public"
+        - "kube-node-lease"
+      
+      # Label selector for namespaces to monitor
+      label_selector: "istio-injection=enabled"
+
+#
+# Ingress Configuration (Optional)
+#
+# To expose Kiali via Istio Gateway:
+#
+# ---
+# apiVersion: networking.istio.io/v1beta1
+# kind: Gateway
+# metadata:
+#   name: kiali-gateway
+#   namespace: istio-system
+# spec:
+#   selector:
+#     istio: ingressgateway
+#   servers:
+#   - port:
+#       number: 443
+#       name: https-kiali
+#       protocol: HTTPS
+#     tls:
+#       mode: SIMPLE
+#       credentialName: kiali-tls-cert
+#     hosts:
+#     - "kiali.example.com"
+# ---
+# apiVersion: networking.istio.io/v1beta1
+# kind: VirtualService
+# metadata:
+#   name: kiali
+#   namespace: istio-system
+# spec:
+#   hosts:
+#   - "kiali.example.com"
+#   gateways:
+#   - kiali-gateway
+#   http:
+#   - match:
+#     - uri:
+#         prefix: /
+#     route:
+#     - destination:
+#         host: kiali
+#         port:
+#           number: 20001
+# ---
+# apiVersion: security.istio.io/v1beta1
+# kind: AuthorizationPolicy
+# metadata:
+#   name: kiali-viewer
+#   namespace: istio-system
+# spec:
+#   selector:
+#     matchLabels:
+#       app: kiali
+#   action: ALLOW
+#   rules:
+#   - from:
+#     - source:
+#         principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+
+#
+# RBAC Configuration
+#
+# Kiali requires ClusterRole for mesh-wide visibility
+# These are created automatically by the chart
+#
+# To restrict Kiali to specific namespaces, modify ClusterRole permissions
+# and set api.namespaces.include list above
+
+#
+# Troubleshooting
+#
+# Issue: Kiali UI shows "Cannot connect to Prometheus"
+# Solution:
+#   1. Verify Prometheus URL is correct
+#   2. Check network connectivity: kubectl exec -n istio-system deploy/kiali -- curl -v <prometheus-url>
+#   3. Verify Prometheus service: kubectl get svc -n monitoring
+#   4. Check for NetworkPolicy blocking traffic
+#
+# Issue: Kiali shows "No Istio resources found"
+# Solution:
+#   1. Verify istiod is running: kubectl get pods -n istio-system -l app=istiod
+#   2. Check Kiali can access Istio: kubectl logs -n istio-system deploy/kiali | grep istio
+#   3. Verify CRDs exist: kubectl get crds | grep istio.io
+#
+# Issue: Authentication failures
+# Solution:
+#   1. Token auth: Generate new token with longer duration
+#   2. Check service account: kubectl get sa kiali-service-account -n istio-system
+#   3. Verify RBAC: kubectl auth can-i list virtualservices.networking.istio.io --as=system:serviceaccount:istio-system:kiali-service-account
+#
+# Issue: High memory usage
+# Solution:
+#   1. Reduce cache duration: kubernetes_config.cache_duration
+#   2. Limit monitored namespaces: api.namespaces.include
+#   3. Increase memory limits: deployment.resources.limits.memory
+#   4. Disable tracing if not needed: server.observability.tracing.enabled: false
+
+#
+# Production Best Practices
+#
+# 1. Authentication:
+#    - Use OpenID Connect for enterprise SSO
+#    - Rotate service account tokens regularly
+#    - Implement IP allowlisting at LoadBalancer/Ingress
+#
+# 2. Authorization:
+#    - Limit Kiali RBAC to required namespaces only
+#    - Use AuthorizationPolicy to restrict access
+#    - Audit Kiali access logs regularly
+#
+# 3. Integration:
+#    - Ensure Prometheus retention covers your needs
+#    - Configure Grafana dashboards for teams
+#    - Integrate with existing monitoring solutions
+#
+# 4. Performance:
+#    - Monitor Kiali resource usage
+#    - Tune cache settings for your mesh size
+#    - Consider namespace filtering for large clusters
+#
+# 5. Security:
+#    - Keep Kiali updated (security patches)
+#    - Use HTTPS/TLS for external access
+#    - Enable audit logging
+#    - Regular security reviews
+#
+# 6. Availability:
+#    - Single replica is sufficient (not mission-critical)
+#    - Configure PodDisruptionBudget if needed
+#    - Document recovery procedures
+#    - Kiali downtime doesn't affect mesh functionality

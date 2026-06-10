@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Istio Base Chart Values",
+  "description": "Schema for Istio base chart values.yaml - installs CRDs and namespace",
+  "type": "object",
+  "properties": {
+    "revision": {
+      "type": "string",
+      "description": "Istio revision for canary upgrades (leave empty for default)",
+      "default": "",
+      "examples": ["", "1-23-0", "canary"]
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Namespace where Istio components will be installed",
+      "default": "istio-system",
+      "minLength": 1,
+      "maxLength": 63,
+      "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
+    "validationWebhook": {
+      "type": "boolean",
+      "description": "Enable validation webhook for CRD schema validation",
+      "default": true
+    },
+    "labels": {
+      "type": "object",
+      "description": "Additional labels to apply to all resources",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "examples": [
+        {
+          "environment": "production",
+          "team": "platform"
+        }
+      ]
+    },
+    "annotations": {
+      "type": "object",
+      "description": "Additional annotations to apply to all resources",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "examples": [
+        {
+          "managed-by": "argocd",
+          "cost-center": "infrastructure"
+        }
+      ]
+    }
+  },
+  "additionalProperties": true
+}

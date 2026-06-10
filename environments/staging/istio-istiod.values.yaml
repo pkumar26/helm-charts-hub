@@ -1,0 +1,33 @@
+# Staging environment overlay for istiod
+revision: ""
+global:
+  hub: docker.io/istio
+  tag: "1.23.0"
+  istioNamespace: istio-system
+  fips:
+    enabled: false
+
+istiod:
+  pilot:
+    replicaCount: 2
+    autoscaleEnabled: false  # Managed via customAutoscaling
+    resources:
+      requests:
+        cpu: 300m
+        memory: 1Gi
+
+customAutoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+
+security:
+  peerAuthentication:
+    enabled: true
+    mode: STRICT
+  networkPolicy:
+    enabled: true
+
+labels:
+  environment: staging
+  cluster: staging-aks-01

@@ -1,0 +1,42 @@
+# Production cluster-specific values overlay for istio-gateway
+# Use with: helm install -f values-prod.yaml -f environments/production/istio-gateway.values.yaml
+
+labels:
+  cluster: prod-aks-01
+  environment: production
+  region: eastus
+  team: platform
+  compliance: fips-140-2
+  security-zone: classified
+  criticality: high
+
+annotations:
+  deployment-target: "prod-aks-01.eastus.azure.com"
+  monitoring: "enabled"
+  alerting: "enabled"
+  backup: "enabled"
+  compliance: "FIPS 140-2, Pod Security Standard (Restricted)"
+
+# Production-specific resource adjustments (if needed beyond values-prod.yaml)
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Production-specific node selector for FIPS-enabled nodes
+nodeSelector:
+  fips: "enabled"
+  node-pool: production
+
+tolerations:
+- key: "fips"
+  operator: "Equal"
+  value: "enabled"
+  effect: "NoSchedule"
+- key: "production"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"

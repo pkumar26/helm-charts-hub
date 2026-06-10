@@ -1,0 +1,179 @@
+# Example: Istio Control Plane (istiod) - Production Configuration with FIPS
+#
+# This example demonstrates production-grade istiod deployment with:
+# - FIPS 140-2 compliance (distroless images with BoringSSL)
+# - High availability (3 replicas with pod anti-affinity)
+# - STRICT mTLS enforcement
+# - Horizontal Pod Autoscaling (3-5 replicas)
+# - Production resource limits
+#
+# Prerequisites:
+#   - Istio base chart installed (CRDs must exist)
+#   - AKS cluster with FIPS-enabled node pool
+#   - Node pool labeled: fips=enabled
+#
+# Create FIPS Node Pool:
+#   az aks nodepool add \
+#     --resource-group <rg> \
+#     --cluster-name <cluster> \
+#     --name fipspool \
+#     --node-count 3 \
+#     --enable-fips-image \
+#     --labels fips=enabled
+#
+# Installation:
+#   helm install istiod charts/istio/istiod \
+#     --namespace istio-system \
+#     -f examples/istio-istiod-production.yaml \
+#     --wait --timeout 10m
+#
+# Verification:
+#   # Check pods running
+#   kubectl get pods -n istio-system -l app=istiod
+#   
+#   # Verify FIPS image
+#   kubectl get pods -n istio-system -l app=istiod \
+#     -o jsonpath='{.items[0].spec.containers[0].image}'
+#   # Expected: docker.io/istio/pilot:1.23.0-distroless
+#   
+#   # Verify FIPS environment
+#   kubectl get pods -n istio-system -l app=istiod \
+#     -o jsonpath='{.items[0].spec.containers[0].env[?(@.name=="GOFIPS")].value}'
+#   # Expected: 1
+#   
+#   # Check HPA
+#   kubectl get hpa -n istio-system
+#   # Expected: istiod HPA with min=3, max=5
+#
+# Next Steps:
+#   1. Install gateway: see istio-gateway-production.yaml
+#   2. Optional: Install Kiali for mesh observability
+#   3. Label application namespaces: kubectl label namespace <ns> istio-injection=enabled
+#   4. Deploy applications with automatic sidecar injection
+#
+
+#
+# FIPS 140-2 Compliance Configuration
+#
+global:
+  hub: docker.io/istio
+  # FIPS-compliant distroless image (BoringSSL/BoringCrypto, Certificate #4407).
+  # The upstream istiod subchart consumes global.tag directly, so the
+  # -distroless variant MUST be set explicitly here.
+  tag: "1.23.0-distroless"
+  istioNamespace: istio-system
+
+  # Enable FIPS mode for BoringSSL/BoringCrypto (Certificate #4407)
+  fips:
+    enabled: true
+
+#
+# Pilot / control plane (istiod) configuration
+#
+# IMPORTANT: Helm only auto-propagates `global` to subcharts. All pilot
+# settings MUST be nested under `istiod:` (the upstream subchart name) or they
+# are silently ignored.
+istiod:
+  pilot:
+    # 3 replicas for production HA across availability zones (NFR-003)
+    replicaCount: 3
+
+    # Disable the upstream HPA so the wrapper's customAutoscaling HPA below is
+    # the single source of truth (prevents two HPAs targeting one Deployment).
+    autoscaleEnabled: false
+
+    # Production resource limits (FR-007)
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+    # Pod anti-affinity to spread replicas across zones (NFR-003)
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - istiod
+          topologyKey: topology.kubernetes.io/zone
+
+    # Schedule on FIPS-enabled nodes only
+    nodeSelector:
+      fips: enabled
+
+    # Tolerations for FIPS node taints (if any)
+    tolerations:
+    - key: fips
+      operator: Equal
+      value: enabled
+      effect: NoSchedule
+
+    # FIPS environment variables (GOFIPS enables BoringCrypto in the
+    # distroless image; FIPS_MODE is consumed by Istio for FIPS enforcement)
+    env:
+      GOFIPS: "1"
+      FIPS_MODE: "true"
+
+#
+# Horizontal Pod Autoscaling (rendered by this wrapper chart)
+#
+customAutoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+#
+# Security baseline configuration
+#
+security:
+  # STRICT mTLS enforcement (FR-004)
+  peerAuthentication:
+    enabled: true
+    mode: STRICT
+
+  # Authorization policies with default-deny (FR-005)
+  authorizationPolicy:
+    denyAll:
+      enabled: true
+    allowWebhook:
+      enabled: true
+    allowXDS:
+      enabled: true
+
+  # NetworkPolicy for L3/L4 isolation (FR-010)
+  networkPolicy:
+    enabled: true
+
+#
+# Control plane revision (for canary upgrades; leave empty for default)
+#
+revision: ""
+
+#
+# Additional labels and annotations
+#
+labels:
+  environment: production
+  fips: enabled
+  compliance: fips-140-2
+
+annotations:
+  managed-by: helm
+  security-baseline: strict
+
+#
+# Production Best Practices
+#
+# - Use an external CA for certificate management (cert-manager recommended)
+# - Configure an egress gateway for outbound traffic control
+# - Enable audit logging for compliance
+# - Monitor with Prometheus/Grafana
+# - Set up alerts for control plane health
+# - Plan a canary upgrade strategy for version updates

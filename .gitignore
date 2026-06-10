@@ -1,5 +1,6 @@
 # Dependencies
 charts/*/charts/
+charts/*/*/charts/
 *.tgz
 
 # OS files

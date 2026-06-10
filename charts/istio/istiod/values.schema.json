@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Istio istiod Control Plane Chart Values",
+  "description": "Schema for Istio istiod chart values.yaml - control plane with FIPS support",
+  "type": "object",
+  "properties": {
+    "revision": {
+      "type": "string",
+      "description": "Istio revision for canary upgrades (leave empty for default)",
+      "default": ""
+    },
+    "global": {
+      "type": "object",
+      "description": "Global Istio configuration",
+      "properties": {
+        "hub": {
+          "type": "string",
+          "description": "Container registry URL for Istio images",
+          "default": "docker.io/istio",
+          "examples": ["docker.io/istio", "gcr.io/istio-release"]
+        },
+        "tag": {
+          "type": "string",
+          "description": "Istio image tag (use -distroless suffix for FIPS)",
+          "default": "1.23.0",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-distroless)?$",
+          "examples": ["1.23.0", "1.23.0-distroless"]
+        },
+        "istioNamespace": {
+          "type": "string",
+          "description": "Namespace for Istio control plane",
+          "default": "istio-system"
+        },
+        "fips": {
+          "type": "object",
+          "description": "FIPS 140-2 compliance configuration",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable FIPS mode (requires -distroless images with BoringSSL)",
+              "default": false
+            }
+          }
+        },
+        "proxy": {
+          "type": "object",
+          "description": "Proxy sidecar configuration",
+          "properties": {
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string",
+                      "pattern": "^\\d+m?$"
+                    },
+                    "memory": {
+                      "type": "string",
+                      "pattern": "^\\d+(Mi|Gi)$"
+                    }
+                  }
+                },
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string",
+                      "pattern": "^\\d+m?$"
+                    },
+                    "memory": {
+                      "type": "string",
+                      "pattern": "^\\d+(Mi|Gi)$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "istiod": {
+      "type": "object",
+      "description": "Values forwarded to the upstream istiod subchart. Helm only auto-propagates `global`; pilot settings MUST be nested here under `istiod.pilot` to take effect.",
+      "additionalProperties": true,
+      "properties": {
+        "pilot": {
+          "type": "object",
+          "description": "Pilot (istiod) configuration passed to the upstream chart",
+          "additionalProperties": true,
+          "properties": {
+            "replicaCount": {
+              "type": "integer",
+              "description": "Number of istiod replicas (used when autoscaleEnabled is false)",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 1,
+              "examples": [1, 3, 5]
+            },
+            "autoscaleEnabled": {
+              "type": "boolean",
+              "description": "Upstream HPA toggle. Set false so this wrapper's customAutoscaling HPA is the single source of truth (avoids duplicate HPAs).",
+              "default": false
+            },
+            "resources": {
+              "type": "object",
+              "description": "Resource requests and limits",
+              "additionalProperties": true
+            },
+            "affinity": {
+              "type": "object",
+              "description": "Pod affinity and anti-affinity rules",
+              "additionalProperties": true
+            },
+            "nodeSelector": {
+              "type": "object",
+              "description": "Node selector labels (e.g., fips: 'true' for FIPS nodes)",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "tolerations": {
+              "type": "array",
+              "description": "Pod tolerations for node taints",
+              "items": {
+                "type": "object"
+              }
+            },
+            "env": {
+              "type": "object",
+              "description": "Environment variables (e.g., GOFIPS, FIPS_MODE)",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "customAutoscaling": {
+      "type": "object",
+      "description": "HorizontalPodAutoscaler rendered by this wrapper chart (templates/hpa.yaml)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable HPA",
+          "default": false
+        },
+        "minReplicas": {
+          "type": "integer",
+          "description": "Minimum number of replicas",
+          "minimum": 1,
+          "default": 1
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "description": "Maximum number of replicas",
+          "minimum": 2,
+          "maximum": 20,
+          "default": 5
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer",
+          "description": "Target CPU utilization percentage",
+          "minimum": 50,
+          "maximum": 95,
+          "default": 80
+        },
+        "targetMemoryUtilizationPercentage": {
+          "type": "integer",
+          "description": "Target memory utilization percentage",
+          "minimum": 50,
+          "maximum": 95
+        },
+        "behavior": {
+          "type": "object",
+          "description": "HPA scaling behavior configuration",
+          "additionalProperties": true
+        }
+      },
+      "if": {
+        "properties": {
+          "enabled": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": ["minReplicas", "maxReplicas"]
+      }
+    },
+    "security": {
+      "type": "object",
+      "description": "Security baseline configuration",
+      "properties": {
+        "peerAuthentication": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["STRICT", "PERMISSIVE", "DISABLE"],
+              "description": "mTLS mode: STRICT for production, PERMISSIVE for dev",
+              "default": "PERMISSIVE"
+            }
+          }
+        },
+        "authorizationPolicy": {
+          "type": "object",
+          "properties": {
+            "denyAll": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "allowWebhook": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            },
+            "allowXDS": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          }
+        },
+        "networkPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Kubernetes NetworkPolicy for L3/L4 isolation",
+              "default": false
+            }
+          }
+        }
+      }
+    },
+    "labels": {
+      "type": "object",
+      "description": "Additional labels for all resources",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    },
+    "annotations": {
+      "type": "object",
+      "description": "Additional annotations for all resources",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,45 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your Istio ingress gateway has been deployed with the following configuration:
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+
+{{- if .Values.global.fips.enabled }}
+🔒 FIPS Mode: ENABLED (using distroless images with BoringSSL)
+{{- else }}
+⚠️  FIPS Mode: DISABLED (using standard images)
+{{- end }}
+
+{{- if .Values.security.peerAuthentication.enabled }}
+🔐 mTLS Mode: {{ .Values.security.peerAuthentication.mode }}
+{{- end }}
+
+{{- if .Values.customAutoscaling.enabled }}
+📊 Autoscaling: ENABLED ({{ .Values.customAutoscaling.minReplicas }}-{{ .Values.customAutoscaling.maxReplicas }} replicas)
+{{- end }}
+
+To verify the gateway is running:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l istio=ingressgateway
+  kubectl get svc -n {{ .Release.Namespace }} -l istio=ingressgateway
+
+To get the external IP of the gateway (if using LoadBalancer):
+
+  kubectl get svc -n {{ .Release.Namespace }} istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+{{- if .Values.global.fips.enabled }}
+
+To verify FIPS compliance:
+
+  POD=$(kubectl get pod -n {{ .Release.Namespace }} -l istio=ingressgateway -o jsonpath='{.items[0].metadata.name}')
+  istioctl proxy-config bootstrap $POD -n {{ .Release.Namespace }} | grep -i boring
+
+Expected output should show BoringSSL certificate validation.
+{{- end }}
+
+For more information, visit:
+  - Chart README: https://github.com/pkumar26/helm-charts-hub/tree/master/charts/istio/gateway
+  - Istio documentation: https://istio.io/latest/docs/

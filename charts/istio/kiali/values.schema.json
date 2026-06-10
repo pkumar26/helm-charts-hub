@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Kiali Observability Chart Values",
+  "description": "Schema for Kiali chart values.yaml - optional Istio mesh observability dashboard",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable/disable Kiali deployment (optional component)",
+      "default": false
+    },
+    "global": {
+      "type": "object",
+      "description": "Global configuration",
+      "properties": {
+        "istioNamespace": {
+          "type": "string",
+          "description": "Istio control plane namespace",
+          "default": "istio-system"
+        }
+      }
+    },
+    "kiali-server": {
+      "type": "object",
+      "description": "Values passed to upstream kiali-server subchart",
+      "properties": {
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "replicas": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5,
+              "default": 1
+            },
+            "image_name": {
+              "type": "string",
+              "default": "quay.io/kiali/kiali"
+            },
+            "image_version": {
+              "type": "string",
+              "pattern": "^v\\d+\\.\\d+(\\.\\d+)?$",
+              "default": "v1.86"
+            },
+            "image_pull_policy": {
+              "type": "string",
+              "enum": ["Always", "IfNotPresent", "Never"],
+              "default": "IfNotPresent"
+            },
+            "resources": {
+              "type": "object",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string",
+                      "pattern": "^\\d+m?$"
+                    },
+                    "memory": {
+                      "type": "string",
+                      "pattern": "^\\d+(Mi|Gi)$"
+                    }
+                  }
+                },
+                "limits": {
+                  "type": "object",
+                  "properties": {
+                    "cpu": {
+                      "type": "string",
+                      "pattern": "^\\d+m?$"
+                    },
+                    "memory": {
+                      "type": "string",
+                      "pattern": "^\\d+(Mi|Gi)$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "external_services": {
+          "type": "object",
+          "properties": {
+            "istio": {
+              "type": "object",
+              "properties": {
+                "config_map_name": {
+                  "type": "string",
+                  "default": "istio"
+                },
+                "istiod_deployment_name": {
+                  "type": "string",
+                  "default": "istiod"
+                },
+                "istio_sidecar_injector_config_map_name": {
+                  "type": "string",
+                  "default": "istio-sidecar-injector"
+                },
+                "root_namespace": {
+                  "type": "string",
+                  "default": "istio-system"
+                }
+              }
+            },
+            "prometheus": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Prometheus endpoint URL",
+                  "examples": [
+                    "http://prometheus-server.monitoring.svc.cluster.local:80",
+                    "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+                  ]
+                }
+              }
+            },
+            "grafana": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "in_cluster_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Grafana endpoint URL",
+                  "examples": [
+                    "http://grafana.monitoring.svc.cluster.local:80",
+                    "http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80"
+                  ]
+                }
+              }
+            },
+            "tracing": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable distributed tracing (Jaeger/Zipkin)",
+                  "default": false
+                }
+              }
+            }
+          }
+        },
+        "auth": {
+          "type": "object",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "enum": ["anonymous", "token", "openid", "openshift"],
+              "description": "Authentication strategy: anonymous (dev), token (service account), openid (SSO)",
+              "default": "anonymous"
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+              "description": "Kubernetes service type",
+              "default": "ClusterIP"
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535,
+              "default": 20001
+            }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Ingress for external access",
+              "default": false
+            },
+            "class_name": {
+              "type": "string"
+            },
+            "hosts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "server": {
+          "type": "object",
+          "properties": {
+            "web_root": {
+              "type": "string",
+              "default": ""
+            },
+            "web_schema": {
+              "type": "string",
+              "default": ""
+            },
+            "web_fqdn": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        },
+        "kiali_feature_flags": {
+          "type": "object",
+          "properties": {
+            "ui_defaults": {
+              "type": "object",
+              "properties": {
+                "metrics_per_refresh": {
+                  "type": "string",
+                  "pattern": "^\\d+[smhd]$",
+                  "default": "1m"
+                },
+                "namespaces": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "refresh_interval": {
+                  "type": "string",
+                  "pattern": "^\\d+[smhd]$",
+                  "default": "15s"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "labels": {
+      "type": "object",
+      "description": "Additional labels for all resources",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    },
+    "annotations": {
+      "type": "object",
+      "description": "Additional annotations for all resources",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {}
+    }
+  },
+  "additionalProperties": true
+}

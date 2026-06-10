@@ -1,0 +1,27 @@
+apiVersion: v2
+name: istio-gateway
+description: Istio ingress gateway Helm chart for AKS with FIPS 140-2 compliance and security baseline
+type: application
+version: 1.0.1
+appVersion: "1.23.0"
+kubeVersion: ">=1.26.0"
+keywords:
+  - istio
+  - service-mesh
+  - ingress
+  - gateway
+  - kubernetes
+  - aks
+  - fips
+home: https://github.com/pkumar26/helm-charts-hub
+sources:
+  - https://github.com/pkumar26/helm-charts-hub
+  - https://github.com/istio/istio
+maintainers:
+  - name: Platform Team
+    email: platform@example.com
+
+dependencies:
+  - name: gateway
+    version: 1.23.0
+    repository: https://istio-release.storage.googleapis.com/charts

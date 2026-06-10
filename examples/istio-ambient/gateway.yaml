@@ -1,0 +1,62 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: istio-gateway
+  namespace: istio-system
+  annotations:
+    # Azure Load Balancer health probe configuration
+    # Key: Use port 15021 (status-port) for health checks, not port 80
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz/ready"
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-protocol: "http"
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-port: "15021"
+    
+    # CRITICAL: externalTrafficPolicy must be set to "Local" for Azure LB health probes to work
+    # This is applied via patch command, not directly on Gateway (service is auto-created):
+    #   kubectl patch svc <gateway-svc> -n istio-system -p '{"spec":{"externalTrafficPolicy":"Local"}}'
+    #
+    # Why this is needed:
+    # - externalTrafficPolicy: Cluster (default) allows cross-node routing via kube-proxy
+    # - Azure LB with Cluster mode requires cluster-wide health probe coordination
+    # - Some AKS versions/configurations have bugs in this coordination mechanism
+    # - externalTrafficPolicy: Local only routes to nodes with local Gateway pods
+    # - With Local mode, Azure LB health probes work per-node (no cluster coordination needed)
+    # - Traffic goes directly: LB -> Node with pod -> Pod (no cross-node forwarding)
+    #
+    # Trade-off: Local mode may cause uneven load distribution if Gateway pods are not
+    # evenly distributed across nodes. Consider using pod anti-affinity or increasing replicas.
+    
+    # Uncomment the annotation below to make the gateway INTERNAL (private network only)
+    # This creates an internal LoadBalancer instead of public-facing
+    
+    # For Azure AKS:
+    # networking.istio.io/service-type: LoadBalancer
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    
+    # For AWS EKS:
+    # networking.istio.io/service-type: LoadBalancer
+    # service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    
+    # For GCP GKE:
+    # networking.istio.io/service-type: LoadBalancer
+    # networking.gke.io/load-balancer-type: "Internal"
+spec:
+  gatewayClassName: istio
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All  # CRITICAL: Allows HTTPRoutes from any namespace (multi-tenant)
+  # Optional: Add HTTPS listener
+  # - name: https
+  #   port: 443
+  #   protocol: HTTPS
+  #   allowedRoutes:
+  #     namespaces:
+  #       from: All
+  #   tls:
+  #     mode: Terminate
+  #     certificateRefs:
+  #     - name: gateway-tls-cert
+  #       kind: Secret

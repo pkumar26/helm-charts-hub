@@ -1,0 +1,21 @@
+{{- if .Values.security.authorizationPolicy.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ include "istio-gateway.fullname" . }}-authz
+  namespace: {{ include "istio-gateway.namespace" . }}
+  labels:
+    {{- include "istio-gateway.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  action: {{ .Values.security.authorizationPolicy.action }}
+  {{- with .Values.security.authorizationPolicy.rules }}
+  # Rules are passed through in native Istio AuthorizationPolicy format
+  # (from/source, to/operation, when). With action ALLOW, requests not matching
+  # any rule are denied (default-deny).
+  rules:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

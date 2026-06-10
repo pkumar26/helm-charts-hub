@@ -1,0 +1,25 @@
+# CI test values - basic configuration
+gateway:
+  name: test-gateway
+  namespace: istio-system
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+referenceGrant:
+  enabled: true
+  namespaces:
+    - default
+
+httpRoute:
+  enabled: true
+  name: test-route
+  namespace: default
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /test
+      backendRefs:
+        - name: test-service
+          port: 80

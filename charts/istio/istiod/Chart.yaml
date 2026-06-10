@@ -1,0 +1,29 @@
+apiVersion: v2
+name: istiod
+description: Istio control plane (istiod) with FIPS 140-2 compliance and security baseline for AKS
+type: application
+version: 1.0.1
+appVersion: "1.23.0"
+kubeVersion: ">=1.26.0"
+keywords:
+  - istio
+  - istiod
+  - control-plane
+  - service-mesh
+  - fips
+  - aks
+  - azure
+home: https://github.com/pkumar26/helm-charts-hub
+sources:
+  - https://github.com/istio/istio
+maintainers:
+  - name: helm-charts-hub
+    url: https://github.com/pkumar26/helm-charts-hub
+annotations:
+  category: Infrastructure
+
+# Dependency on official Istio istiod chart
+dependencies:
+  - name: istiod
+    version: "1.23.0"
+    repository: https://istio-release.storage.googleapis.com/charts

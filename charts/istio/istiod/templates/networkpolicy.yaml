@@ -1,0 +1,67 @@
+{{- if .Values.security.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istiod-network-policy
+  namespace: {{ .Values.global.istioNamespace | default "istio-system" }}
+  labels:
+    {{- include "istiod.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app: istiod
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow webhook traffic from Kubernetes API server
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15017  # Webhook port
+  # Allow xDS traffic from Envoy proxies
+  - from:
+    - namespaceSelector: {}
+      podSelector:
+        matchExpressions:
+        - key: security.istio.io/tlsMode
+          operator: In
+          values:
+          - istio
+    ports:
+    - protocol: TCP
+      port: 15012  # xDS with mTLS
+    - protocol: TCP
+      port: 15010  # xDS plaintext (for migration)
+  # Allow monitoring/metrics scraping
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15014  # Control plane monitoring
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow Kubernetes API access
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          component: apiserver
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow egress to any port for service discovery
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+{{- end }}

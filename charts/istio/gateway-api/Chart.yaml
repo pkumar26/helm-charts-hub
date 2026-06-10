@@ -1,0 +1,19 @@
+apiVersion: v2
+name: gateway-api
+description: Kubernetes Gateway API resources for Istio Ambient Mode with Azure AKS optimizations
+type: application
+version: 0.2.0
+appVersion: "1.30.0"
+keywords:
+  - istio
+  - gateway-api
+  - ambient
+  - service-mesh
+  - azure
+  - aks
+home: https://github.com/pkumar26/helm-charts-hub
+sources:
+  - https://istio.io/latest/docs/ambient/
+  - https://gateway-api.sigs.k8s.io/
+maintainers:
+  - name: Platform Team

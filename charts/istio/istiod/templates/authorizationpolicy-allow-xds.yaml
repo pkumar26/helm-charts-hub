@@ -1,0 +1,30 @@
+{{- if .Values.security.authorizationPolicy.allowXDS.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-xds-communication
+  namespace: {{ .Values.global.istioNamespace | default "istio-system" }}
+  labels:
+    {{- include "istiod.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: istiod
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        ports:
+        - "15010"  # Envoy xDS (plaintext)
+        - "15012"  # Envoy xDS with mTLS
+        methods:
+        - "POST"
+        - "GET"
+  - to:
+    - operation:
+        ports:
+        - "8080"   # Readiness probe
+        - "15014"  # Control plane monitoring
+        methods:
+        - "GET"
+{{- end }}

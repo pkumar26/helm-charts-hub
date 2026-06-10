@@ -1,0 +1,39 @@
+# Enforce strict mTLS for all pods in default namespace
+# This will reject any non-mTLS connections
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default-strict-mtls
+  namespace: default
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Enforce strict mTLS for the shared Gateway workload (istio-system)
+# Mirrors the `security.peerAuthentication` baseline in the gateway-api chart.
+# Use a selector to scope it to the auto-created gateway pods only; drop the
+# selector to apply it namespace-wide.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: istio-gateway-mtls
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: istio-gateway
+  mtls:
+    mode: STRICT
+
+---
+# Optional: Enforce strict mTLS globally (all namespaces)
+# Uncomment to apply cluster-wide
+# apiVersion: security.istio.io/v1
+# kind: PeerAuthentication
+# metadata:
+#   name: global-strict-mtls
+#   namespace: istio-system
+# spec:
+#   mtls:
+#     mode: STRICT

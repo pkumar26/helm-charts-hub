@@ -1,0 +1,69 @@
+{{- if .Values.security.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.gateway.name }}-network-policy
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+spec:
+  # Select the auto-created gateway Deployment pods (ambient/Gateway API label)
+  podSelector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: {{ .Values.gateway.name }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow inbound traffic on the configured listener ports from any namespace
+  - from:
+    - namespaceSelector: {}
+    ports:
+    {{- range .Values.gateway.listeners }}
+    - protocol: TCP
+      port: {{ .port }}
+    {{- end }}
+  # Allow the Istio status port for health checks / readiness probes
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 15021
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow communication to the istiod control plane (xDS + webhook)
+  - to:
+    - podSelector:
+        matchLabels:
+          app: istiod
+    ports:
+    - protocol: TCP
+      port: 15012  # xDS mTLS
+    - protocol: TCP
+      port: 15017  # Webhook
+  # Allow ztunnel (ambient data plane) traffic for HBONE tunneling
+  - to:
+    - podSelector:
+        matchLabels:
+          app: ztunnel
+    ports:
+    - protocol: TCP
+      port: 15008  # HBONE
+  # Allow forwarding to mesh workloads across namespaces
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 1024
+      endPort: 65535
+{{- end }}

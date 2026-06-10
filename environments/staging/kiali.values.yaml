@@ -1,0 +1,43 @@
+# Staging environment overlay for kiali
+# Apply with: helm upgrade --install kiali charts/istio/kiali \
+#   --namespace istio-system \
+#   --values charts/istio/kiali/values-staging.yaml \
+#   --values environments/staging/kiali.values.yaml
+
+enabled: true  # Enable in staging for testing
+
+kiali-server:
+  deployment:
+    replicas: 1
+    
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  auth:
+    strategy: token  # Require Kubernetes token in staging
+  
+  service:
+    type: ClusterIP  # Internal access only
+  
+  external_services:
+    prometheus:
+      # Update this URL to match your staging Prometheus endpoint
+      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
+      # Common alternatives:
+      # url: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+    
+    grafana:
+      enabled: true
+      # Update this URL to match your staging Grafana endpoint
+      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+      # Common alternatives:
+      # in_cluster_url: "http://kube-prometheus-stack-grafana.monitoring.svc.cluster.local:80"
+
+labels:
+  environment: staging
+  managed-by: helm

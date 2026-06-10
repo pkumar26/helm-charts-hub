@@ -1,0 +1,40 @@
+# Development environment overlay for kiali
+# Apply with: helm upgrade --install kiali charts/istio/kiali \
+#   --namespace istio-system \
+#   --values charts/istio/kiali/values-dev.yaml \
+#   --values environments/dev/kiali.values.yaml
+
+enabled: true  # Enable in dev for troubleshooting
+
+kiali-server:
+  deployment:
+    replicas: 1
+    
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  
+  auth:
+    strategy: anonymous  # No auth required in dev
+  
+  service:
+    type: NodePort
+    node_port: 30020  # Access via node IP on port 30020
+  
+  external_services:
+    prometheus:
+      # Update this URL to match your dev Prometheus endpoint
+      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
+    
+    grafana:
+      enabled: true
+      # Update this URL to match your dev Grafana endpoint
+      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+
+labels:
+  environment: dev
+  managed-by: helm

@@ -1,0 +1,161 @@
+# Production environment values for istio-gateway
+# FIPS enabled, STRICT mTLS, 3 replicas, full security baseline (FR-003 to FR-010)
+
+global:
+  fips:
+    enabled: true  # FIPS 140-2 compliance for production (distroless images with BoringSSL)
+  hub: docker.io/istio
+  tag: 1.23.0
+
+istioGateway:
+  enabled: true
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    hosts:
+    - "*"
+    tls:
+      mode: SIMPLE
+      minProtocolVersion: TLSV1_2
+      cipherSuites:
+      - ECDHE-RSA-AES128-GCM-SHA256
+      - ECDHE-RSA-AES256-GCM-SHA384
+      - ECDHE-ECDSA-AES128-GCM-SHA256
+      - ECDHE-ECDSA-AES256-GCM-SHA384
+
+# Security baseline configuration
+security:
+  peerAuthentication:
+    enabled: true
+    mode: STRICT  # FR-004
+  authorizationPolicy:
+    enabled: true
+    action: ALLOW
+    rules:
+    - from:
+      - source:
+          namespaces:
+          - istio-system
+          - production
+      to:
+      - operation:
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+  networkPolicy:
+    enabled: true  # FR-010
+
+# FR-008: Custom HPA with 80% CPU target
+customAutoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+
+# Values for upstream gateway subchart
+gateway:
+  name: istio-ingressgateway
+  replicaCount: 3  # NFR-003: HA
+  
+  service:
+    type: LoadBalancer
+    ports:
+    - name: status-port
+      port: 15021
+      protocol: TCP
+      targetPort: 15021
+    - name: http2
+      port: 80
+      protocol: TCP
+      targetPort: 80
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 443
+  
+  resources:
+    requests:
+      cpu: 500m  # FR-007
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  
+  autoscaling:
+    enabled: false  # Use customAutoscaling instead
+  
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1337
+    runAsGroup: 1337
+    fsGroup: 1337
+    seccompProfile:
+      type: RuntimeDefault
+  
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1337
+    capabilities:
+      drop:
+      - ALL
+  
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: istio
+            operator: In
+            values:
+            - ingressgateway
+        topologyKey: topology.kubernetes.io/zone
+  
+  nodeSelector:
+    fips: "enabled"
+  
+  tolerations:
+  - key: "fips"
+    operator: "Equal"
+    value: "enabled"
+    effect: "NoSchedule"
+  
+  labels:
+    environment: production
+    team: platform
+    managed-by: helm
+    compliance: fips-140-2
+    security-zone: classified
+    criticality: high
+  
+  annotations:
+    compliance: "FIPS 140-2, Pod Security Standard (Restricted)"
+    security-baseline: "STRICT mTLS, NetworkPolicy, AuthorizationPolicy"

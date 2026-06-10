@@ -1,0 +1,32 @@
+# CI test values
+revision: ""
+global:
+  hub: docker.io/istio
+  tag: "1.23.0"
+  istioNamespace: istio-system
+  fips:
+    enabled: false
+
+pilot:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+autoscaling:
+  enabled: false
+
+security:
+  peerAuthentication:
+    enabled: true
+    mode: PERMISSIVE
+  authorizationPolicy:
+    denyAll:
+      enabled: false
+  networkPolicy:
+    enabled: false
+
+labels:
+  environment: ci
+  test: "true"

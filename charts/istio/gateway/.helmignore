@@ -1,0 +1,51 @@
+# Patterns to ignore when building Helm packages
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+ci/
+
+# Documentation
+*.md
+docs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+*.orig
+
+# Test files
+*_test.go
+test/
+tests/
+
+# Build artifacts
+*.tgz
+dist/
+
+# Helm
+requirements.lock
+
+# Environment files
+.env*
+*.local
+
+# Ignore values files except main values.yaml
+values-dev.yaml
+values-staging.yaml
+values-prod.yaml

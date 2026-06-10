@@ -1,0 +1,205 @@
+# Default values for Istio Gateway API chart
+# Optimized for Istio Ambient Mode on Azure AKS
+
+## Gateway Configuration
+gateway:
+  # Gateway name
+  name: istio-gateway
+  
+  # Gateway namespace (MUST be istio-system for ambient mode auto-deployment)
+  namespace: istio-system
+  
+  # Gateway class name (use "istio" for Istio ambient mode)
+  gatewayClassName: istio
+  
+  # Service configuration for the auto-created LoadBalancer
+  service:
+    # Service type (LoadBalancer, ClusterIP, NodePort)
+    type: LoadBalancer
+    
+    # CRITICAL for Azure AKS: Set to Local to fix Azure LB health probe issues
+    # See docs/azure-lb-externaltrafficpolicy-fix.md for details
+    externalTrafficPolicy: Local
+    
+    # Use internal LoadBalancer (private IP only)
+    internal: false
+    
+    # Azure-specific annotations
+    azure:
+      # Health probe configuration (port 15021 is Istio's status port)
+      healthProbe:
+        enabled: true
+        port: "15021"
+        path: "/healthz/ready"
+        protocol: "http"
+      
+      # Optional: Specify subnet for internal LB
+      # subnet: "gateway-subnet"
+      
+      # Optional: Static IP address (must be in subnet range)
+      # loadBalancerIP: "10.0.1.100"
+    
+    # AWS-specific configuration (if deploying to EKS)
+    aws:
+      # Use internal LoadBalancer
+      # scheme: internal
+      
+      # Health check configuration
+      # healthCheckProtocol: HTTP
+      # healthCheckPort: "15021"
+      # healthCheckPath: "/healthz/ready"
+    
+    # GCP-specific configuration (if deploying to GKE)
+    gcp:
+      # Use internal LoadBalancer
+      # loadBalancerType: Internal
+  
+  # Gateway listeners configuration
+  listeners:
+    # HTTP listener on port 80
+    - name: http
+      port: 80
+      protocol: HTTP
+      # Allow HTTPRoutes from all namespaces (multi-tenant)
+      allowedRoutes:
+        namespaces:
+          from: All
+    
+    # Optional: HTTPS listener on port 443
+    # - name: https
+    #   port: 443
+    #   protocol: HTTPS
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: All
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #     - name: gateway-tls
+    #       kind: Secret
+
+## HTTPRoute Configuration (optional example route)
+httpRoute:
+  # Enable example HTTPRoute creation
+  enabled: false
+  
+  # HTTPRoute name
+  name: example-route
+  
+  # HTTPRoute namespace
+  namespace: default
+  
+  # Hostname-based routing (optional)
+  hostnames: []
+  # - "example.com"
+  # - "*.example.com"
+  
+  # Path-based routing rules
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: example-service
+          port: 80
+
+## ReferenceGrant Configuration
+referenceGrant:
+  # Enable ReferenceGrant for cross-namespace routing
+  enabled: true
+  
+  # Target namespaces to allow Gateway access
+  # Use ["*"] to allow all namespaces
+  namespaces:
+    - default
+
+## RBAC Configuration
+rbac:
+  # Enable RBAC policies for multi-tenant Gateway management
+  enabled: false
+  
+  # Platform team administrators (full Gateway/GatewayClass management)
+  platformAdmins:
+    # Azure AD group or users
+    - "platform-admin@example.com"
+    - "platform-team"
+  
+  # Application teams (HTTPRoute management in their namespaces)
+  applicationTeams:
+    - name: "team-developers"
+      namespaces:
+        - default
+        - team-namespace
+
+## Labels to apply to all resources
+labels:
+  team: platform
+  managed-by: helm
+  component: gateway
+
+## Annotations to apply to all resources
+annotations: {}
+
+## Additional custom annotations for the Gateway resource
+gatewayAnnotations: {}
+
+## Additional custom annotations for the auto-created Service
+serviceAnnotations: {}
+
+## Global Istio configuration (used by the security baseline templates)
+global:
+  # Istio hub for pulling images
+  hub: docker.io/istio
+
+  # Istio version tag
+  tag: 1.23.0
+
+  # Namespace where the Istio control plane (istiod/ztunnel) is installed
+  istioNamespace: istio-system
+
+  # FIPS 140-2 compliance configuration
+  # In ambient mode, FIPS-validated crypto is provided by the ztunnel and
+  # waypoint proxies. Enable FIPS on the istiod/ztunnel install (see the istiod
+  # chart) and label/run on FIPS-enabled AKS node pools. This flag documents the
+  # expected posture and gates FIPS-related notes/labels for this chart.
+  fips:
+    enabled: false  # Set true for production (distroless images, BoringSSL #4407)
+
+## Security baseline configuration (FR-004, FR-005, FR-010)
+## Adapted for Istio ambient mode + Kubernetes Gateway API:
+##  - mTLS is enforced by ztunnel (PeerAuthentication still applies)
+##  - L7 authorization attaches to the Gateway via targetRefs (Gateway API)
+##  - NetworkPolicy selects the auto-created gateway Deployment pods
+security:
+  # PeerAuthentication: mTLS enforcement (FR-004)
+  peerAuthentication:
+    # Enable a PeerAuthentication resource in the gateway namespace
+    enabled: false
+    # mTLS mode: PERMISSIVE (dev) or STRICT (production). STRICT rejects
+    # any plaintext traffic between mesh workloads.
+    mode: PERMISSIVE
+    # When true the policy is namespace-wide (no selector). When false it
+    # targets only the gateway workload via the gateway-name label.
+    namespaceWide: true
+
+  # AuthorizationPolicy: access control attached to the Gateway (FR-005)
+  authorizationPolicy:
+    enabled: false
+    # ALLOW with explicit rules = default-deny for everything not listed.
+    action: ALLOW
+    # Rules use Istio AuthorizationPolicy semantics (from/to). Empty rules with
+    # action ALLOW denies all traffic; supply explicit allowlists in production.
+    rules: []
+    # Example:
+    # rules:
+    #   - from:
+    #       - source:
+    #           namespaces: ["istio-system", "production"]
+    #     to:
+    #       - operation:
+    #           methods: ["GET", "POST"]
+
+  # NetworkPolicy: L3/L4 isolation for the gateway pods (FR-010)
+  networkPolicy:
+    enabled: false

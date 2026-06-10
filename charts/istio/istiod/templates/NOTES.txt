@@ -1,0 +1,23 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Istio control plane (istiod) has been deployed to {{ .Values.global.istioNamespace }}.
+
+{{- if .Values.global.fips.enabled }}
+
+✅ FIPS 140-2 MODE ENABLED
+Using distroless images with BoringSSL/BoringCrypto for cryptographic operations.
+{{- end }}
+
+To verify the installation:
+
+  kubectl get pods -n {{ .Values.global.istioNamespace }} -l app=istiod
+  istioctl proxy-status
+
+{{- if eq .Values.security.peerAuthentication.mode "STRICT" }}
+
+⚠️  STRICT mTLS is enabled. All workloads must have Istio sidecars.
+{{- end }}
+
+Next step: Install the ingress gateway
+
+  helm install istio-ingressgateway charts/istio/gateway -n {{ .Values.global.istioNamespace }}

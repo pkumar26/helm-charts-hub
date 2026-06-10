@@ -1,0 +1,25 @@
+# Production environment overlay for istio-base
+# This file is used with: helm install istio-base charts/istio/base -f environments/production/istio-base.values.yaml
+
+# Use production-specific configuration
+revision: ""
+namespace: istio-system
+validationWebhook: true
+
+labels:
+  environment: production
+  managed-by: argocd
+  cluster: prod-aks-01
+  team: platform
+  compliance: fips-140-2
+  security-zone: classified
+  criticality: high
+
+annotations:
+  description: "Production Istio base - prod-aks-01 (FIPS-enabled)"
+  contact: "platform-team@example.com"
+  owner: "platform-team"
+  cost-center: "infrastructure"
+  security-baseline: "strict"
+  backup-policy: "daily"
+  monitoring: "enabled"

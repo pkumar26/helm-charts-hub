@@ -1,0 +1,28 @@
+apiVersion: v2
+name: istio-base
+description: Istio base chart containing CRDs and cluster-wide resources for AKS deployment
+type: application
+version: 1.0.0
+appVersion: "1.23.0"
+kubeVersion: ">=1.26.0"
+keywords:
+  - istio
+  - service-mesh
+  - crd
+  - aks
+  - azure
+home: https://github.com/pkumar26/helm-charts-hub
+sources:
+  - https://github.com/istio/istio
+maintainers:
+  - name: helm-charts-hub
+    url: https://github.com/pkumar26/helm-charts-hub
+annotations:
+  category: Infrastructure
+
+# Dependency on official Istio base chart for CRDs
+dependencies:
+  - name: base
+    version: "1.23.0"
+    repository: https://istio-release.storage.googleapis.com/charts
+

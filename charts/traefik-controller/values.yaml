@@ -73,18 +73,18 @@ securityContext:
 providers:
   kubernetesIngress:
     # -- Enable Ingress controller mode
-    enabled: true
+    enabled: false
   kubernetesGateway:
     # -- Enable Gateway API mode (requires gatewayApi.enabled)
-    enabled: false
+    enabled: true
 
 # -- Traefik dashboard configuration
 dashboard:
   # -- Enable Traefik dashboard
-  enabled: false
+  enabled: true
   # -- Expose dashboard via Ingress
   ingress:
-    enabled: false
+    enabled: true
 
 # -- Metrics configuration
 metrics:
@@ -104,14 +104,14 @@ tls:
 # -- Ingress controller feature flag
 ingressController:
   # -- Enable management of classic Ingress resources
-  enabled: true
+  enabled: false
   # -- IngressClass name
   ingressClassName: traefik
 
 # -- Gateway API feature flag
 gatewayApi:
   # -- Enable Gateway API provider, GatewayClass, and Gateway
-  enabled: false
+  enabled: true
   gatewayClass:
     # -- GatewayClass name
     name: traefik

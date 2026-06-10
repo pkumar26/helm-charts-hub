@@ -1,0 +1,24 @@
+{{- if .Values.referenceGrant.enabled }}
+{{- $gatewayNamespace := .Values.gateway.namespace }}
+{{- range .Values.referenceGrant.namespaces }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-{{ $.Values.gateway.name }}-access
+  namespace: {{ . }}
+  labels:
+    {{- include "gateway-api.labels" $ | nindent 4 }}
+spec:
+  from:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    namespace: {{ $gatewayNamespace }}
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    namespace: {{ $gatewayNamespace }}
+  to:
+  - group: ""
+    kind: Service
+{{- end }}
+{{- end }}

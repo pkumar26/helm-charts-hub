@@ -1,0 +1,24 @@
+{{- if .Values.security.authorizationPolicy.enabled }}
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.gateway.name }}-authz
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+spec:
+  # Attach to the Gateway API Gateway (ambient-native). This applies the policy
+  # at the gateway/waypoint instead of a pod selector.
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: {{ .Values.gateway.name }}
+  action: {{ .Values.security.authorizationPolicy.action }}
+  {{- with .Values.security.authorizationPolicy.rules }}
+  # Rules are passed through in native Istio AuthorizationPolicy format
+  # (from/source, to/operation, when). With action ALLOW, requests not matching
+  # any rule are denied (default-deny).
+  rules:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
