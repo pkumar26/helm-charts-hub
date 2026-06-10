@@ -1,0 +1,152 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+  annotations:
+    {{- include "gateway-api.serviceAnnotations" . | nindent 4 }}
+    {{- with .Values.gatewayAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  gatewayClassName: {{ .Values.gateway.gatewayClassName }}
+  listeners:
+  {{- range .Values.gateway.listeners }}
+  - name: {{ .name }}
+    port: {{ .port }}
+    protocol: {{ .protocol }}
+    {{- if .hostname }}
+    hostname: {{ .hostname }}
+    {{- end }}
+    {{- if .tls }}
+    tls:
+      {{- toYaml .tls | nindent 6 }}
+    {{- end }}
+    {{- if .allowedRoutes }}
+    allowedRoutes:
+      {{- toYaml .allowedRoutes | nindent 6 }}
+    {{- end }}
+  {{- end }}
+---
+{{- if ne .Values.gateway.service.type "ClusterIP" }}
+# Service customization via annotation (Istio auto-creates the service)
+# This ConfigMap is used by a Job to patch the service with externalTrafficPolicy
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.gateway.name }}-service-patch
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+data:
+  patch.yaml: |
+    spec:
+      {{- if .Values.gateway.service.externalTrafficPolicy }}
+      externalTrafficPolicy: {{ .Values.gateway.service.externalTrafficPolicy }}
+      {{- end }}
+      {{- if .Values.gateway.service.azure.loadBalancerIP }}
+      loadBalancerIP: {{ .Values.gateway.service.azure.loadBalancerIP }}
+      {{- end }}
+---
+# Job to patch the auto-created service (Istio creates service after Gateway)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.gateway.name }}-service-patcher
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ .Values.gateway.name }}-service-patcher
+    spec:
+      serviceAccountName: {{ .Values.gateway.name }}-patcher
+      restartPolicy: OnFailure
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "Waiting for service {{ .Values.gateway.name }}-istio to be created..."
+          for i in {1..60}; do
+            if kubectl get svc {{ .Values.gateway.name }}-istio -n {{ .Values.gateway.namespace }} &>/dev/null; then
+              echo "Service found, applying patch..."
+              kubectl patch svc {{ .Values.gateway.name }}-istio -n {{ .Values.gateway.namespace }} \
+                --patch-file /patch/patch.yaml
+              echo "Service patched successfully!"
+              exit 0
+            fi
+            echo "Waiting... ($i/60)"
+            sleep 2
+          done
+          echo "ERROR: Service not found after 120 seconds"
+          exit 1
+        volumeMounts:
+        - name: patch
+          mountPath: /patch
+      volumes:
+      - name: patch
+        configMap:
+          name: {{ .Values.gateway.name }}-service-patch
+---
+# ServiceAccount for the patcher job
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.gateway.name }}-patcher
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+---
+# Role for the patcher job
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.gateway.name }}-patcher
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "patch"]
+---
+# RoleBinding for the patcher job
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.gateway.name }}-patcher
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Values.gateway.name }}-patcher
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.gateway.name }}-patcher
+  namespace: {{ .Values.gateway.namespace }}
+{{- end }}

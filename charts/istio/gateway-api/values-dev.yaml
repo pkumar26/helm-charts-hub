@@ -1,0 +1,24 @@
+# Development environment values for gateway-api (Istio ambient mode)
+# Relaxed security for faster iteration (FR-015): PERMISSIVE mTLS, no FIPS,
+# no network isolation.
+
+global:
+  hub: docker.io/istio
+  tag: 1.23.0
+  istioNamespace: istio-system
+  fips:
+    enabled: false
+
+security:
+  peerAuthentication:
+    enabled: true
+    mode: PERMISSIVE  # Allow plaintext for debugging
+    namespaceWide: true
+  authorizationPolicy:
+    enabled: false  # No access restrictions in dev
+  networkPolicy:
+    enabled: false  # No network isolation in dev
+
+labels:
+  environment: dev
+  managed-by: helm

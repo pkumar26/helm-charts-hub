@@ -1,0 +1,62 @@
+Thank you for installing {{ .Chart.Name }}!
+
+Your Istio (ambient mode) Gateway API resources have been deployed:
+
+Release Name:  {{ .Release.Name }}
+Namespace:     {{ .Release.Namespace }}
+Gateway:       {{ .Values.gateway.name }} (namespace: {{ .Values.gateway.namespace }})
+Chart Version: {{ .Chart.Version }}
+App Version:   {{ .Chart.AppVersion }}
+
+{{- if .Values.global.fips.enabled }}
+
+🔒 FIPS Mode: EXPECTED (ambient crypto via ztunnel/waypoint distroless images)
+   Ensure istiod/ztunnel were installed with FIPS enabled and that the gateway
+   runs on FIPS-enabled AKS node pools.
+{{- else }}
+
+⚠️  FIPS Mode: DISABLED (standard images)
+{{- end }}
+
+Security baseline:
+{{- if .Values.security.peerAuthentication.enabled }}
+  🔐 mTLS (PeerAuthentication): {{ .Values.security.peerAuthentication.mode }}
+{{- else }}
+  🔐 mTLS (PeerAuthentication): not managed by this release
+{{- end }}
+{{- if .Values.security.authorizationPolicy.enabled }}
+  🛡️  AuthorizationPolicy: {{ .Values.security.authorizationPolicy.action }} ({{ len .Values.security.authorizationPolicy.rules }} rule(s)) attached to Gateway {{ .Values.gateway.name }}
+  {{- if and (eq .Values.security.authorizationPolicy.action "ALLOW") (not .Values.security.authorizationPolicy.rules) }}
+  ⚠️  ALLOW action with no rules = DEFAULT-DENY (all traffic to the gateway is denied).
+  {{- end }}
+{{- else }}
+  🛡️  AuthorizationPolicy: not managed by this release
+{{- end }}
+{{- if .Values.security.networkPolicy.enabled }}
+  🌐 NetworkPolicy: ENABLED (L3/L4 isolation for gateway pods)
+{{- else }}
+  🌐 NetworkPolicy: disabled
+{{- end }}
+
+To verify the Gateway and its auto-created service:
+
+  kubectl get gateway {{ .Values.gateway.name }} -n {{ .Values.gateway.namespace }}
+  kubectl get svc -n {{ .Values.gateway.namespace }} -l gateway.networking.k8s.io/gateway-name={{ .Values.gateway.name }}
+
+To get the external IP (LoadBalancer):
+
+  kubectl get svc -n {{ .Values.gateway.namespace }} \
+    -l gateway.networking.k8s.io/gateway-name={{ .Values.gateway.name }} \
+    -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'
+
+{{- if .Values.security.networkPolicy.enabled }}
+
+To inspect the applied NetworkPolicy:
+
+  kubectl get networkpolicy {{ .Values.gateway.name }}-network-policy -n {{ .Values.gateway.namespace }} -o yaml
+{{- end }}
+
+For more information, visit:
+  - Chart README: https://github.com/pkumar26/helm-charts-hub/tree/master/charts/istio/gateway-api
+  - Istio ambient mode: https://istio.io/latest/docs/ambient/
+  - Kubernetes Gateway API: https://gateway-api.sigs.k8s.io/

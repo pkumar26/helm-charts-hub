@@ -1,0 +1,18 @@
+{{- if .Values.security.peerAuthentication.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: {{ .Values.gateway.name }}-mtls
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    {{- include "gateway-api.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.security.peerAuthentication.namespaceWide }}
+  # Target only the auto-created gateway workload (ambient/Gateway API label)
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: {{ .Values.gateway.name }}
+  {{- end }}
+  mtls:
+    mode: {{ .Values.security.peerAuthentication.mode }}
+{{- end }}

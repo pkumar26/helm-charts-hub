@@ -1,0 +1,79 @@
+# Production environment values for gateway-api (Istio ambient mode)
+# Full security baseline (FR-003 to FR-010): FIPS posture, STRICT mTLS,
+# default-deny AuthorizationPolicy with explicit allowlist, NetworkPolicy.
+
+global:
+  hub: docker.io/istio
+  tag: 1.23.0-distroless  # FIPS-compliant distroless images (BoringSSL #4407)
+  istioNamespace: istio-system
+  fips:
+    enabled: true  # FIPS 140-2 compliance for production
+
+# Gateway resource: production listeners (HTTP redirect + HTTPS terminate)
+gateway:
+  name: istio-gateway
+  namespace: istio-system
+  gatewayClassName: istio
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local  # CRITICAL for Azure AKS health probes
+    internal: false
+    azure:
+      healthProbe:
+        enabled: true
+        port: "15021"
+        path: "/healthz/ready"
+        protocol: "http"
+  listeners:
+  - name: https
+    port: 443
+    protocol: HTTPS
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: gateway-tls
+        kind: Secret
+
+# Security baseline configuration
+security:
+  # FR-004: STRICT mTLS enforcement
+  peerAuthentication:
+    enabled: true
+    mode: STRICT
+    namespaceWide: true
+
+  # FR-005: default-deny with explicit allowlist (ALLOW action + rules)
+  authorizationPolicy:
+    enabled: true
+    action: ALLOW
+    rules:
+    - from:
+      - source:
+          namespaces:
+          - istio-system
+          - production
+      to:
+      - operation:
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+
+  # FR-010: NetworkPolicy for L3/L4 isolation
+  networkPolicy:
+    enabled: true
+
+# Multi-tenant RBAC for Gateway/HTTPRoute management
+rbac:
+  enabled: true
+
+labels:
+  environment: production
+  managed-by: helm
+  team: platform
+  compliance: fips-140-2
+  security-zone: classified

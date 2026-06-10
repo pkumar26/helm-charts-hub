@@ -1,0 +1,39 @@
+# Staging environment values for gateway-api (Istio ambient mode)
+# Moderate security for pre-production: STRICT mTLS, network isolation enabled,
+# FIPS optional (enable to rehearse production posture).
+
+global:
+  hub: docker.io/istio
+  tag: 1.23.0
+  istioNamespace: istio-system
+  fips:
+    enabled: false  # Enable to validate FIPS before production
+
+security:
+  peerAuthentication:
+    enabled: true
+    mode: STRICT  # Enforce mTLS in staging
+    namespaceWide: true
+  authorizationPolicy:
+    enabled: true
+    action: ALLOW
+    rules:
+    - from:
+      - source:
+          namespaces:
+          - istio-system
+          - staging
+      to:
+      - operation:
+          methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+  networkPolicy:
+    enabled: true  # L3/L4 isolation
+
+labels:
+  environment: staging
+  managed-by: helm
+  team: platform
