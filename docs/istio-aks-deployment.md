@@ -38,7 +38,7 @@ Complete guide for deploying and upgrading Istio service mesh on Azure Kubernete
 | istio/base | 1.0.0 | 1.23.0 | Stable |
 | istio/istiod | 1.0.0 | 1.23.0 | Stable |
 | istio/gateway | 1.0.0 | 1.23.0 | Stable |
-| istio/kiali | 1.0.0 | 1.86.0 | Optional |
+| istio/kiali | 1.1.0 | 2.10.0 | Optional |
 
 ### AKS Kubernetes Version Support
 
