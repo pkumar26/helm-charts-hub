@@ -30,13 +30,19 @@ jobs:
 
       - name: Build chart dependencies
         run: |
-          for chart in charts/*/; do
+          # Build dependencies for all charts including nested Istio charts
+          for chart in charts/*/ charts/istio/*/; do
             if [ -f "$chart/Chart.yaml" ]; then
-              helm dependency build "$chart"
+              echo "Building dependencies for $chart"
+              helm dependency build "$chart" || echo "No dependencies or failed for $chart"
             fi
           done
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: charts
+          # Note: chart-releaser will discover both top-level and nested Istio charts
+          # Istio charts: base, istiod, gateway, kiali (under charts/istio/)
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

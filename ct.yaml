@@ -5,3 +5,12 @@ remote: origin
 validate-maintainers: false
 check-version-increment: true
 helm-extra-args: --timeout 120s
+
+# Istio charts configuration
+# Note: Istio charts have strict installation order requirements:
+#   1. istio/base (CRDs)
+#   2. istio/istiod (Control plane)
+#   3. istio/gateway (Ingress)
+#   4. istio/kiali (Optional observability)
+# Chart-testing may not respect this order during automated tests.
+# For integration testing, use examples/deploy-istio-*.sh scripts.
