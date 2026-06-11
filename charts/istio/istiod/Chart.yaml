@@ -3,7 +3,7 @@ name: istiod
 description: Istio control plane (istiod) with FIPS 140-2 compliance and security baseline for AKS
 type: application
 version: 1.0.1
-appVersion: "1.23.0"
+appVersion: "1.30.0"
 kubeVersion: ">=1.26.0"
 keywords:
   - istio
@@ -25,5 +25,5 @@ annotations:
 # Dependency on official Istio istiod chart
 dependencies:
   - name: istiod
-    version: "1.23.0"
+    version: "1.30.0"
     repository: https://istio-release.storage.googleapis.com/charts

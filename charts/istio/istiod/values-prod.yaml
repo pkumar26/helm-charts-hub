@@ -5,7 +5,7 @@ revision: ""
 
 global:
   hub: docker.io/istio
-  tag: "1.23.0-distroless"  # FIPS-compliant distroless image (BoringSSL/BoringCrypto)
+  tag: "1.30.0-distroless"  # FIPS-compliant distroless image (BoringSSL/BoringCrypto)
   istioNamespace: istio-system
   
   # FIPS 140-2 compliance ENABLED for production

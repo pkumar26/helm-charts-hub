@@ -1,10 +1,10 @@
-# Development environment values for gateway-api (Istio ambient mode)
-# Relaxed security for faster iteration (FR-015): PERMISSIVE mTLS, no FIPS,
-# no network isolation.
+# Dev environment overlay for gateway-api (Istio ambient mode)
+# Use with: helm install gateway-api charts/istio/gateway-api -f environments/dev/istio-gateway-api.values.yaml
+# Relaxed security for faster iteration: PERMISSIVE mTLS, no FIPS, no network isolation.
 
 global:
   hub: docker.io/istio
-  tag: 1.30.0
+  tag: "1.30.0"
   istioNamespace: istio-system
   fips:
     enabled: false
@@ -21,4 +21,8 @@ security:
 
 labels:
   environment: dev
+  cluster: dev-aks-01
   managed-by: helm
+
+annotations:
+  deployment-target: "dev-aks-01.eastus.azure.com"

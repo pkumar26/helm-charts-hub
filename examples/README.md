@@ -4,6 +4,10 @@ This directory contains example deployment scripts and configurations for deploy
 
 ## Overview
 
+Istio supports two deployment modes:
+- **Sidecar Mode** (Traditional): Sidecar proxy per pod with full L7 features
+- **Ambient Mode** (New): Sidecar-less with shared ztunnel DaemonSet for L4 mTLS
+
 Istio charts support **progressive security** across multiple environments:
 - **Development**: Fast iteration, minimal resources, PERMISSIVE mTLS
 - **Staging**: Pre-production testing, STRICT mTLS, moderate HA
@@ -11,9 +15,48 @@ Istio charts support **progressive security** across multiple environments:
 
 ## Quick Start
 
-### Development Deployment
+### Ambient Mode Installation (Recommended for New Deployments)
 
-For local development and testing:
+Ambient mode provides reduced resource overhead with optional L7 capabilities:
+
+```bash
+# Complete ambient mode installation for development
+chmod +x examples/install-istio-ambient.sh
+./examples/install-istio-ambient.sh
+
+# Or specify environment (dev, staging, or production)
+./examples/install-istio-ambient.sh --environment production
+
+# With Kiali observability dashboard
+./examples/install-istio-ambient.sh --environment staging --with-kiali
+
+# Custom namespace
+./examples/install-istio-ambient.sh --environment production --namespace custom-istio --with-kiali
+```
+
+**What this installs**:
+1. Istio base (CRDs)
+2. CNI plugin (from official Istio repo)
+3. Ztunnel DaemonSet (L4 proxy)
+4. Istiod control plane
+5. Gateway API CRDs
+6. Gateway API resources
+7. Kiali dashboard (optional, use `--with-kiali`)
+
+**Environment-Specific Configuration**:
+- **dev**: Single replica, PERMISSIVE mTLS, standard images
+- **staging**: 2 replicas with HPA, STRICT mTLS, standard images
+- **production**: 3 replicas with HPA, STRICT mTLS, FIPS-compliant distroless images
+
+**Clean up before reinstalling**:
+```bash
+chmod +x examples/cleanup-istio.sh
+./examples/cleanup-istio.sh
+```
+
+### Sidecar Mode - Development Deployment
+
+For local development and testing with traditional sidecar mode:
 
 ```bash
 # Deploy with minimal resources and PERMISSIVE mTLS
@@ -30,7 +73,7 @@ For local development and testing:
 - Minimal resources (250m CPU, 512Mi memory)
 - Anonymous Kiali authentication
 
-### Staging Deployment
+### Sidecar Mode - Staging Deployment
 
 For pre-production validation:
 
@@ -87,7 +130,34 @@ az aks nodepool add \
 
 ## Available Scripts
 
-### Deployment Scripts
+### Ambient Mode Scripts
+
+| Script | Purpose | Use Case |
+|--------|---------|----------|
+| `install-istio-ambient.sh` | Complete ambient mode installation | Fresh ambient mode setup with CNI, ztunnel, and Gateway API |
+| `cleanup-istio.sh` | Complete Istio removal | Clean up before reinstallation or mode switching |
+
+**Ambient Mode Scripts Usage**:
+```bash
+# Install ambient mode for development (default)
+chmod +x examples/install-istio-ambient.sh
+./examples/install-istio-ambient.sh
+
+# Install for specific environment
+./examples/install-istio-ambient.sh --environment production
+./examples/install-istio-ambient.sh --environment staging --with-kiali
+
+# Options:
+#   --environment ENV        Environment: dev (default), staging, or production
+#   --namespace NAMESPACE    Target namespace (default: istio-system)
+#   --with-kiali            Include Kiali observability dashboard
+
+# Clean up before reinstalling
+chmod +x examples/cleanup-istio.sh
+./examples/cleanup-istio.sh
+```
+
+### Sidecar Mode Deployment Scripts
 
 | Script | Environment | Purpose | FIPS | Replicas | mTLS |
 |--------|-------------|---------|------|----------|------|
@@ -417,6 +487,150 @@ kubectl get pods -n istio-system -l app=istiod \
 - Verify using `values-prod.yaml` with `global.fips.enabled: true`
 - Check image tag contains `-distroless`
 - Ensure pods scheduled on FIPS node pool
+
+---
+
+## Ambient Mode Deployment
+
+Istio ambient mode provides a sidecar-less architecture with reduced resource overhead. For comprehensive ambient mode documentation, see [docs/istio-aks-deployment.md - Ambient Mode](../docs/istio-aks-deployment.md).
+
+### Quick Installation
+
+Use the automated installation script for ambient mode:
+
+```bash
+# Development environment (default)
+./examples/install-istio-ambient.sh
+
+# Staging environment with Kiali
+./examples/install-istio-ambient.sh --environment staging --with-kiali
+
+# Production environment with FIPS compliance
+./examples/install-istio-ambient.sh --environment production --with-kiali
+```
+
+**Installed Components**:
+1. Istio base (CRDs)
+2. CNI plugin (from official Istio Helm repo)
+3. Ztunnel DaemonSet (L4 proxy)
+4. Istiod control plane (with CNI enabled)
+5. Gateway API CRDs
+6. Gateway API resources
+7. Kiali dashboard (optional with `--with-kiali`)
+
+**Environment Differences**:
+- **dev**: Single replica, PERMISSIVE mTLS, standard images
+- **staging**: 2 replicas with HPA 2-4, STRICT mTLS
+- **production**: 3 replicas with HPA 3-5, STRICT mTLS, FIPS-compliant distroless images
+
+### Complete Cleanup
+
+Before reinstalling or switching modes:
+
+```bash
+# Clean up all Istio components
+./examples/cleanup-istio.sh
+```
+
+This script:
+- Backs up all Istio resources to `/tmp/istio-backup-<timestamp>`
+- Uninstalls all Helm releases (gateway-api, kiali, istiod, ztunnel, istio-cni, istio-base)
+- Removes cluster-wide resources (ClusterRoles, webhooks)
+- Deletes the istio-system namespace
+- Verifies complete cleanup
+
+### Adding Workloads to Ambient Mesh
+
+After installation, label namespaces for ambient mode:
+
+```bash
+# Label namespace for ambient mode
+kubectl label namespace <app-namespace> istio.io/dataplane-mode=ambient
+
+# Deploy your application
+kubectl apply -f <app-manifests>
+
+# Create HTTPRoute for routing
+kubectl apply -f - <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: my-app-route
+  namespace: <app-namespace>
+spec:
+  parentRefs:
+  - name: istio-gateway
+    namespace: istio-system
+  hostnames:
+  - "myapp.example.com"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: my-app-service
+      port: 80
+EOF
+```
+
+### Ambient Mode Architecture
+
+```mermaid
+graph TD
+    A[Client Traffic] --> B[Gateway LoadBalancer]
+    B --> C[Gateway Pod]
+    C --> D[Ztunnel on Node A]
+    D --> E[App Pod without Sidecar]
+    E --> F[Ztunnel on Node B]
+    F --> G[Backend Pod without Sidecar]
+    
+    H[Istiod Control Plane] -.manages.-> C
+    H -.manages.-> D
+    H -.manages.-> F
+    
+    I[CNI Plugin] -.configures.-> D
+    I -.configures.-> F
+```
+
+### Validation
+
+Verify ambient mode installation:
+
+```bash
+# Check ztunnel DaemonSet (should be running on all nodes)
+kubectl get daemonset -n istio-system ztunnel
+
+# Check CNI plugin (should be running on all nodes)
+kubectl get daemonset -n istio-system istio-cni-node
+
+# Check istiod control plane
+kubectl get pods -n istio-system -l app=istiod
+
+# Check Gateway status
+kubectl get gateway -n istio-system istio-gateway
+
+# View ambient mode namespaces
+kubectl get namespaces -l istio.io/dataplane-mode=ambient
+```
+
+### When to Use Ambient vs Sidecar
+
+**Choose Ambient Mode When**:
+- Reduced resource overhead is priority (no sidecar per pod)
+- L4 mTLS is sufficient for most workloads
+- Simplified upgrades are important (no pod restarts needed)
+- Large-scale deployments (100+ services)
+
+**Choose Sidecar Mode When**:
+- Need full L7 features without waypoint proxies
+- Per-pod traffic policies required
+- Existing Istio sidecar investment
+- Fine-grained per-service configuration
+
+For detailed comparison and migration guide, see:
+- [Sidecar vs Ambient Comparison](../docs/istio-aks-deployment.md#ambient-mode-installation-sequence)
+- [Migration from Sidecar to Ambient](../docs/istio-aks-deployment.md#migration-from-sidecar-to-ambient)
 
 ---
 

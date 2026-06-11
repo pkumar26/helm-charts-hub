@@ -9,7 +9,7 @@ revision: ""
 global:
   # Image registry and tag
   hub: docker.io/istio
-  tag: "1.23.0"
+  tag: "1.30.0"
   
   # Istio namespace
   istioNamespace: istio-system
