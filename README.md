@@ -9,10 +9,11 @@ A Helm chart monorepo providing reusable, production-ready Kubernetes charts wit
 
 ## Project Overview
 
-**helm-charts-hub** follows a two-tier architecture:
+**helm-charts-hub** follows a two-tier architecture, plus a standalone service mesh tier:
 
 1. **Library tier** — `common-lib` is a Helm library chart providing reusable helpers for Deployments, Services, Ingress/Gateway resources, HPA, labels, annotations, and security contexts.
 2. **Application tier** — Application and controller charts (e.g., `web-app`, `traefik-controller`, `nginx-controller`, `envoy-controller`, `kgateway-controller`) declare `common-lib` as a dependency and delegate standard resource rendering to library helpers.
+3. **Service mesh tier** — The `istio/*` charts (`base`, `istiod`, `gateway`, `gateway-api`, `kiali`) provide a production-ready, FIPS 140-2 compliant Istio service mesh for Azure AKS, supporting both sidecar and ambient modes. These charts wrap upstream Istio components and are deployed independently of `common-lib`.
 
 ```text
 common-lib (library)
@@ -22,6 +23,13 @@ common-lib (library)
     ├── nginx-controller (edge controller — Ingress)
     ├── envoy-controller (edge controller — Gateway API-native)
     └── kgateway-controller (edge controller — Gateway API-native)
+
+istio/ (service mesh — standalone, FIPS-compliant for AKS)
+    ├── base (CRDs and cluster-wide resources — install first)
+    ├── istiod (control plane)
+    ├── gateway (ingress gateway — sidecar mode)
+    ├── gateway-api (Kubernetes Gateway API — ambient mode)
+    └── kiali (optional observability dashboard)
 ```
 
 All resources carry standard Kubernetes app labels plus project-specific labels, and two base annotations. Security defaults include runAsNonRoot: true, read-only root filesystem, and no privilege escalation.
@@ -37,6 +45,8 @@ This repository:
 - Supports **Gateway API** natively with the Envoy Gateway (`envoy-controller`) and kgateway (`kgateway-controller`) charts.
 
 - Supports **Gateway API opt-in** with the Traefik controller chart (via `gatewayApi.enabled: true`).
+
+- Supports **Gateway API for Istio Ambient Mode** with the `istio/gateway-api` chart (Azure AKS optimized).
 
 ## Prerequisites
 
@@ -103,6 +113,7 @@ See [CHARTS.md](CHARTS.md) for the complete list of available charts with descri
 | [istio/base](charts/istio/base/) | Istio base — CRDs and cluster-wide resources (install first) | Service Mesh |
 | [istio/istiod](charts/istio/istiod/) | Istio control plane — FIPS 140-2 compliant service mesh | Service Mesh |
 | [istio/gateway](charts/istio/gateway/) | Istio gateway — FIPS-compliant ingress with security baseline | Service Mesh |
+| [istio/gateway-api](charts/istio/gateway-api/) | Kubernetes Gateway API for Istio Ambient Mode — multi-tenant Gateway with Azure AKS optimizations | Service Mesh |
 | [istio/kiali](charts/istio/kiali/) | Kiali dashboard — optional mesh observability | Service Mesh |
 
 ### Istio Service Mesh on AKS
@@ -112,8 +123,10 @@ The repository includes production-ready Istio charts for Azure Kubernetes Servi
 **Installation Order** (critical):
 1. **istio/base** — Install CRDs first
 2. **istio/istiod** — Control plane (requires FIPS-enabled node pool for production)
-3. **istio/gateway** — Ingress gateway with STRICT mTLS and security baseline
+3. **istio/gateway** — Ingress gateway with STRICT mTLS and security baseline (sidecar mode), **or** **istio/gateway-api** — Kubernetes Gateway API for Istio Ambient Mode
 4. **istio/kiali** — Optional mesh visualization (can skip for air-gapped/minimal environments)
+
+> **Sidecar vs Ambient**: Use **istio/gateway** for the traditional sidecar data plane. Use **istio/gateway-api** for [Istio Ambient Mode](https://istio.io/latest/docs/ambient/) with the Kubernetes Gateway API — it includes Azure AKS optimizations (automatic `externalTrafficPolicy: Local` patching to fix Azure Load Balancer health probes), multi-tenant RBAC, and cross-namespace routing via ReferenceGrants.
 
 **Quick Start**:
 ```bash
@@ -147,7 +160,8 @@ The repository includes production-ready Istio charts for Azure Kubernetes Servi
 - [Examples README](examples/README.md) — Deployment scripts and troubleshooting
 - [Base Chart](charts/istio/base/README.md) — CRDs and installation order
 - [Istiod Chart](charts/istio/istiod/README.md) — Control plane with canary upgrade guide
-- [Gateway Chart](charts/istio/gateway/README.md) — Ingress with security baseline
+- [Gateway Chart](charts/istio/gateway/README.md) — Ingress with security baseline (sidecar mode)
+- [Gateway API Chart](charts/istio/gateway-api/README.md) — Kubernetes Gateway API for Istio Ambient Mode (Azure AKS optimized)
 - [Kiali Chart](charts/istio/kiali/README.md) — Optional observability dashboard
 
 ## Troubleshooting
