@@ -1,10 +1,11 @@
-# Staging environment values for gateway-api (Istio ambient mode)
+# Staging environment overlay for gateway-api (Istio ambient mode)
+# Use with: helm install gateway-api charts/istio/gateway-api -f environments/staging/istio-gateway-api.values.yaml
 # Moderate security for pre-production: STRICT mTLS, network isolation enabled,
 # FIPS optional (enable to rehearse production posture).
 
 global:
   hub: docker.io/istio
-  tag: 1.30.0
+  tag: "1.30.0"
   istioNamespace: istio-system
   fips:
     enabled: false  # Enable to validate FIPS before production
@@ -35,5 +36,10 @@ security:
 
 labels:
   environment: staging
+  cluster: staging-aks-01
   managed-by: helm
   team: platform
+
+annotations:
+  deployment-target: "staging-aks-01.eastus.azure.com"
+  monitoring: "enabled"

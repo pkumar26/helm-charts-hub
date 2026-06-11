@@ -5,7 +5,7 @@ global:
   fips:
     enabled: true  # FIPS 140-2 compliance for production (distroless images with BoringSSL)
   hub: docker.io/istio
-  tag: 1.23.0
+  tag: 1.30.0
 
 istioGateway:
   enabled: true

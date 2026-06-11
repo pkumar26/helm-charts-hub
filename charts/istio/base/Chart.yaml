@@ -3,7 +3,7 @@ name: istio-base
 description: Istio base chart containing CRDs and cluster-wide resources for AKS deployment
 type: application
 version: 1.0.0
-appVersion: "1.23.0"
+appVersion: "1.30.0"
 kubeVersion: ">=1.26.0"
 keywords:
   - istio
@@ -23,6 +23,6 @@ annotations:
 # Dependency on official Istio base chart for CRDs
 dependencies:
   - name: base
-    version: "1.23.0"
+    version: "1.30.0"
     repository: https://istio-release.storage.googleapis.com/charts
 

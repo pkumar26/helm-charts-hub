@@ -1,15 +1,16 @@
-# Production environment values for gateway-api (Istio ambient mode)
-# Full security baseline (FR-003 to FR-010): FIPS posture, STRICT mTLS,
-# default-deny AuthorizationPolicy with explicit allowlist, NetworkPolicy.
+# Production environment overlay for gateway-api (Istio ambient mode)
+# Use with: helm install gateway-api charts/istio/gateway-api -f environments/production/istio-gateway-api.values.yaml
+# Full security baseline: FIPS posture, STRICT mTLS, default-deny
+# AuthorizationPolicy with explicit allowlist, NetworkPolicy.
 
 global:
   hub: docker.io/istio
-  tag: 1.30.0-distroless  # FIPS-compliant distroless images (BoringSSL #4407)
+  tag: "1.30.0-distroless"  # FIPS-compliant distroless images (BoringSSL)
   istioNamespace: istio-system
   fips:
     enabled: true  # FIPS 140-2 compliance for production
 
-# Gateway resource: production listeners (HTTP redirect + HTTPS terminate)
+# Gateway resource: production listeners (HTTPS terminate)
 gateway:
   name: istio-gateway
   namespace: istio-system
@@ -39,13 +40,13 @@ gateway:
 
 # Security baseline configuration
 security:
-  # FR-004: STRICT mTLS enforcement
+  # STRICT mTLS enforcement
   peerAuthentication:
     enabled: true
     mode: STRICT
     namespaceWide: true
 
-  # FR-005: default-deny with explicit allowlist (ALLOW action + rules)
+  # Default-deny with explicit allowlist (ALLOW action + rules)
   authorizationPolicy:
     enabled: true
     action: ALLOW
@@ -63,7 +64,7 @@ security:
           - PUT
           - DELETE
 
-  # FR-010: NetworkPolicy for L3/L4 isolation
+  # NetworkPolicy for L3/L4 isolation
   networkPolicy:
     enabled: true
 
@@ -73,7 +74,13 @@ rbac:
 
 labels:
   environment: production
+  cluster: prod-aks-01
   managed-by: helm
   team: platform
   compliance: fips-140-2
   security-zone: classified
+
+annotations:
+  deployment-target: "prod-aks-01.eastus.azure.com"
+  monitoring: "enabled"
+  alerting: "enabled"

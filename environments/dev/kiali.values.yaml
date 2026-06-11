@@ -9,7 +9,8 @@ enabled: true  # Enable in dev for troubleshooting
 kiali-server:
   deployment:
     replicas: 1
-    
+    service_type: LoadBalancer  # Expose Kiali via cloud load balancer
+
     resources:
       requests:
         cpu: 10m
@@ -21,19 +22,13 @@ kiali-server:
   auth:
     strategy: anonymous  # No auth required in dev
   
-  service:
-    type: NodePort
-    node_port: 30020  # Access via node IP on port 30020
-  
   external_services:
     prometheus:
-      # Update this URL to match your dev Prometheus endpoint
-      url: "http://prometheus-server.monitoring.svc.cluster.local:80"
-    
+      # Istio Prometheus addon (samples/addons/prometheus.yaml) in istio-system
+      url: "http://prometheus.istio-system:9090"
+
     grafana:
-      enabled: true
-      # Update this URL to match your dev Grafana endpoint
-      in_cluster_url: "http://grafana.monitoring.svc.cluster.local:80"
+      enabled: false  # No in-cluster Grafana in dev; enable + set URL if you add one
 
 labels:
   environment: dev

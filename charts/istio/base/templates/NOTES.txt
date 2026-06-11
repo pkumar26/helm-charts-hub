@@ -22,12 +22,27 @@ You should see the following Istio CRDs installed:
   - workloadentries.networking.istio.io
   - workloadgroups.networking.istio.io
 
-IMPORTANT: The control plane (istiod) and gateway must be installed next:
+IMPORTANT: The control plane (istiod) must be installed next.
+
+For SIDECAR mode:
 
   # Install control plane
   helm install istiod charts/istio/istiod -n {{ include "istio-base.namespace" . }}
 
   # Install ingress gateway
   helm install istio-ingressgateway charts/istio/gateway -n {{ include "istio-base.namespace" . }}
+
+For AMBIENT mode (CNI + ztunnel, no sidecars):
+
+  # Install CNI, control plane (with ambient enabled), and ztunnel
+  helm install istio-cni istio/cni --set profile=ambient -n {{ include "istio-base.namespace" . }}
+  helm install istiod charts/istio/istiod \
+    --set-string istiod.pilot.env.PILOT_ENABLE_AMBIENT=true -n {{ include "istio-base.namespace" . }}
+  helm install ztunnel istio/ztunnel -n {{ include "istio-base.namespace" . }}
+
+  # Expose traffic via the Kubernetes Gateway API
+  helm install gateway-api charts/istio/gateway-api -n {{ include "istio-base.namespace" . }}
+
+Tip: use examples/install-istio-ambient.sh to install the full ambient stack.
 
 For more information, see the README.md file.
